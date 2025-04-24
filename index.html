@@ -2,11 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Template Engine with Clipboard + Preview</title>
+  <title>Template Engine with Color & Syntax Highlighting</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       padding: 20px;
+      background: #f9f9f9;
     }
 
     h2 {
@@ -30,12 +31,15 @@
     input, textarea {
       width: 100%;
       box-sizing: border-box;
-      margin-bottom: 5px;
       padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-family: monospace;
     }
 
     textarea {
       resize: vertical;
+      min-height: 100px;
     }
 
     button {
@@ -43,6 +47,7 @@
       margin-top: 10px;
       margin-right: 10px;
       cursor: pointer;
+      font-weight: bold;
     }
 
     .color-themes {
@@ -61,11 +66,27 @@
       border-radius: 5px;
     }
 
+    pre.code-output {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      font-family: Consolas, monospace;
+    }
+
+    /* Simple syntax highlighting */
+    .hl-tag { color: #569CD6; }
+    .hl-attr { color: #9CDCFE; }
+    .hl-value { color: #CE9178; }
+    .hl-text { color: #d4d4d4; }
+
     iframe {
       width: 100%;
       height: 200px;
       border: 1px solid #ccc;
       margin-top: 10px;
+      background: white;
     }
   </style>
 </head>
@@ -87,38 +108,36 @@
 
   <h2>Part 1: Define Variables</h2>
   <div class="grid">
-    <div><label for="var1">var1 (Primary Color)</label><input id="var1" type="text"></div>
-    <div><label for="var2">var2 (Secondary Color)</label><input id="var2" type="text"></div>
-    <div><label for="var3">var3</label><input id="var3" type="text"></div>
-    <div><label for="var4">var4</label><input id="var4" type="text"></div>
-    <div><label for="var5">var5</label><input id="var5" type="text"></div>
-    <div><label for="var6">var6</label><input id="var6" type="text"></div>
-    <div><label for="var7">var7</label><input id="var7" type="text"></div>
-    <div><label for="var8">var8</label><input id="var8" type="text"></div>
-    <div><label for="var9">var9</label><input id="var9" type="text"></div>
+    <div><label for="var1">var1 (Primary Color)</label><input id="var1" oninput="updateColor(this)"></div>
+    <div><label for="var2">var2 (Secondary Color)</label><input id="var2" oninput="updateColor(this)"></div>
+    <div><label for="var3">var3</label><input id="var3"></div>
+    <div><label for="var4">var4</label><input id="var4"></div>
+    <div><label for="var5">var5</label><input id="var5"></div>
+    <div><label for="var6">var6</label><input id="var6"></div>
+    <div><label for="var7">var7</label><input id="var7"></div>
+    <div><label for="var8">var8</label><input id="var8"></div>
+    <div><label for="var9">var9</label><input id="var9"></div>
   </div>
 
   <h2>Optional: Find & Replace in Variables</h2>
   <div class="replace-grid">
-    <div><label for="find1">Find 1</label><input id="find1" type="text"></div>
-    <div><label for="replace1">Replace with</label><input id="replace1" type="text"></div>
-    <div><label for="find2">Find 2</label><input id="find2" type="text"></div>
-    <div><label for="replace2">Replace with</label><input id="replace2" type="text"></div>
-    <div><label for="find3">Find 3</label><input id="find3" type="text"></div>
-    <div><label for="replace3">Replace with</label><input id="replace3" type="text"></div>
-    <div><label for="find4">Find 4</label><input id="find4" type="text"></div>
-    <div><label for="replace4">Replace with</label><input id="replace4" type="text"></div>
+    <div><label for="find1">Find 1</label><input id="find1"></div>
+    <div><label for="replace1">Replace with</label><input id="replace1"></div>
+    <div><label for="find2">Find 2</label><input id="find2"></div>
+    <div><label for="replace2">Replace with</label><input id="replace2"></div>
+    <div><label for="find3">Find 3</label><input id="find3"></div>
+    <div><label for="replace3">Replace with</label><input id="replace3"></div>
+    <div><label for="find4">Find 4</label><input id="find4"></div>
+    <div><label for="replace4">Replace with</label><input id="replace4"></div>
   </div>
 
   <h2>Part 2: Paste HTML Template</h2>
-  <textarea id="template" rows="6" placeholder='e.g. &lt;a href="var2" style="color:var1"&gt;var3&lt;/a&gt;'></textarea>
-
+  <textarea id="template" placeholder='e.g. <a href="var2" style="color:var1">var3</a>'></textarea>
   <button onclick="applyTemplate()">Generate HTML</button>
 
-  <h2>Part 3: Output Final HTML</h2>
-  <textarea id="output" rows="6" readonly></textarea>
-  <br>
+  <h2>Part 3: HTML Output (Copyable + Syntax Highlighted)</h2>
   <button onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+  <pre id="highlighted" class="code-output"></pre>
 
   <h2>Part 4: Live Preview</h2>
   <iframe id="preview"></iframe>
@@ -127,6 +146,19 @@
     function setColors(primary, secondary) {
       document.getElementById("var1").value = primary;
       document.getElementById("var2").value = secondary;
+      updateColor(document.getElementById("var1"));
+      updateColor(document.getElementById("var2"));
+    }
+
+    function updateColor(input) {
+      const val = input.value.trim();
+      if (/^#[0-9a-f]{6}$/i.test(val)) {
+        input.style.backgroundColor = val;
+        input.style.color = "#fff";
+      } else {
+        input.style.backgroundColor = "";
+        input.style.color = "";
+      }
     }
 
     function applyFindReplace(str) {
@@ -154,16 +186,30 @@
         template = template.replace(regex, vars[key]);
       });
 
-      document.getElementById("output").value = template;
+      // Update preview iframe
       document.getElementById("preview").srcdoc = template;
+
+      // Syntax-highlighted code
+      document.getElementById("highlighted").innerHTML = highlightHTML(template);
     }
 
     function copyToClipboard() {
-      const output = document.getElementById("output");
-      output.select();
-      output.setSelectionRange(0, 99999); // For mobile devices
+      const dummy = document.createElement("textarea");
+      dummy.value = document.getElementById("highlighted").textContent;
+      document.body.appendChild(dummy);
+      dummy.select();
       document.execCommand("copy");
+      document.body.removeChild(dummy);
       alert("HTML copied to clipboard!");
+    }
+
+    function highlightHTML(html) {
+      return html
+        .replace(/</g, '&lt;').replace(/>/g, '&gt;') // Escape
+        .replace(/(&lt;\/?[a-z]+)(.*?)(\/?&gt;)/gi, (_, tag, attrs, close) =>
+          `<span class="hl-tag">${tag}</span><span class="hl-attr">${attrs}</span><span class="hl-tag">${close}</span>`
+        )
+        .replace(/"(.*?)"/g, '<span class="hl-value">"$1"</span>');
     }
   </script>
 
