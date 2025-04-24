@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>JS Templating Engine</title>
+  <title>JS Templating Engine with Find & Replace</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -18,7 +18,6 @@
 
     .grid label {
       font-weight: bold;
-      margin-top: 10px;
     }
 
     .grid input {
@@ -34,6 +33,18 @@
     button {
       padding: 10px 20px;
       margin-top: 10px;
+    }
+
+    .replace-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .replace-grid label {
+      display: block;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -52,6 +63,18 @@
     <div><label for="var9">var9</label><input id="var9" type="text"></div>
   </div>
 
+  <h2>Optional: Find & Replace in Variables</h2>
+  <div class="replace-grid">
+    <div><label for="find1">Find 1</label><input id="find1" type="text"></div>
+    <div><label for="replace1">Replace with</label><input id="replace1" type="text"></div>
+    <div><label for="find2">Find 2</label><input id="find2" type="text"></div>
+    <div><label for="replace2">Replace with</label><input id="replace2" type="text"></div>
+    <div><label for="find3">Find 3</label><input id="find3" type="text"></div>
+    <div><label for="replace3">Replace with</label><input id="replace3" type="text"></div>
+    <div><label for="find4">Find 4</label><input id="find4" type="text"></div>
+    <div><label for="replace4">Replace with</label><input id="replace4" type="text"></div>
+  </div>
+
   <h2>Part 2: Paste HTML Template</h2>
   <textarea id="template" rows="6" placeholder='e.g. <a href="var2" style="color:var1">var3</a>'></textarea>
 
@@ -61,16 +84,35 @@
   <textarea id="output" rows="6" readonly></textarea>
 
   <script>
-    function applyTemplate() {
-      let template = document.getElementById("template").value;
-      for (let i = 1; i <= 9; i++) {
-        let input = document.getElementById("var" + i);
-        if (input) {
-          let value = input.value;
-          let regex = new RegExp("var" + i, "g");
-          template = template.replace(regex, value);
+    function applyFindReplace(value) {
+      for (let i = 1; i <= 4; i++) {
+        const find = document.getElementById('find' + i).value;
+        const replace = document.getElementById('replace' + i).value;
+        if (find) {
+          value = value.split(find).join(replace);
         }
       }
+      return value;
+    }
+
+    function applyTemplate() {
+      let template = document.getElementById("template").value;
+      const values = {};
+
+      for (let i = 1; i <= 9; i++) {
+        const input = document.getElementById("var" + i);
+        if (input) {
+          const processed = applyFindReplace(input.value);
+          values["var" + i] = processed;
+        }
+      }
+
+      // Replace each var in the template
+      Object.keys(values).forEach(key => {
+        const regex = new RegExp(key, "g");
+        template = template.replace(regex, values[key]);
+      });
+
       document.getElementById("output").value = template;
     }
   </script>
