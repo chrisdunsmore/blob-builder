@@ -2,11 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>JS Templating Engine with Find & Replace</title>
+  <title>Template Engine with Clipboard + Preview</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
+    }
+
+    h2 {
+      margin-top: 30px;
     }
 
     .grid {
@@ -16,25 +20,6 @@
       margin-bottom: 20px;
     }
 
-    .grid label {
-      font-weight: bold;
-    }
-
-    .grid input {
-      width: 100%;
-      margin-bottom: 10px;
-    }
-
-    textarea {
-      width: 100%;
-      margin-bottom: 10px;
-    }
-
-    button {
-      padding: 10px 20px;
-      margin-top: 10px;
-    }
-
     .replace-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -42,18 +27,68 @@
       margin-bottom: 20px;
     }
 
-    .replace-grid label {
-      display: block;
+    input, textarea {
+      width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 5px;
+      padding: 6px;
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    button {
+      padding: 10px 15px;
+      margin-top: 10px;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+
+    .color-themes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .color-btn {
+      border: none;
+      padding: 10px 14px;
+      color: #fff;
+      cursor: pointer;
       font-weight: bold;
+      border-radius: 5px;
+    }
+
+    iframe {
+      width: 100%;
+      height: 200px;
+      border: 1px solid #ccc;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
 
+  <h2>Color Theme Quick Select</h2>
+  <div class="color-themes">
+    <button class="color-btn" style="background:#328833" onclick="setColors('#328833','#65b766')">Green</button>
+    <button class="color-btn" style="background:#5b46c4" onclick="setColors('#5b46c4','#745af5')">Violet</button>
+    <button class="color-btn" style="background:#c74200" onclick="setColors('#c74200','#ff8141')">Tawny Orange</button>
+    <button class="color-btn" style="background:#cc0100" onclick="setColors('#cc0100','#fe3725')">Red</button>
+    <button class="color-btn" style="background:#446775" onclick="setColors('#446775','#527c8e')">Slate Grey</button>
+    <button class="color-btn" style="background:#4b6a3c" onclick="setColors('#4b6a3c','#6a7a62')">Old Vine</button>
+    <button class="color-btn" style="background:#337d94" onclick="setColors('#337d94','#4b99b1')">Teal Blue</button>
+    <button class="color-btn" style="background:#19507f" onclick="setColors('#19507f','#296293')">Mid Blue</button>
+    <button class="color-btn" style="background:#3b4caa" onclick="setColors('#3b4caa','#5069e7')">Light Navy</button>
+    <button class="color-btn" style="background:#4a0d66" onclick="setColors('#4a0d66','#6e3d85')">Purple</button>
+  </div>
+
   <h2>Part 1: Define Variables</h2>
-  <div class="grid" id="variables">
-    <div><label for="var1">var1</label><input id="var1" type="text"></div>
-    <div><label for="var2">var2</label><input id="var2" type="text"></div>
+  <div class="grid">
+    <div><label for="var1">var1 (Primary Color)</label><input id="var1" type="text"></div>
+    <div><label for="var2">var2 (Secondary Color)</label><input id="var2" type="text"></div>
     <div><label for="var3">var3</label><input id="var3" type="text"></div>
     <div><label for="var4">var4</label><input id="var4" type="text"></div>
     <div><label for="var5">var5</label><input id="var5" type="text"></div>
@@ -76,44 +111,59 @@
   </div>
 
   <h2>Part 2: Paste HTML Template</h2>
-  <textarea id="template" rows="6" placeholder='e.g. <a href="var2" style="color:var1">var3</a>'></textarea>
+  <textarea id="template" rows="6" placeholder='e.g. &lt;a href="var2" style="color:var1"&gt;var3&lt;/a&gt;'></textarea>
 
   <button onclick="applyTemplate()">Generate HTML</button>
 
   <h2>Part 3: Output Final HTML</h2>
   <textarea id="output" rows="6" readonly></textarea>
+  <br>
+  <button onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+
+  <h2>Part 4: Live Preview</h2>
+  <iframe id="preview"></iframe>
 
   <script>
-    function applyFindReplace(value) {
+    function setColors(primary, secondary) {
+      document.getElementById("var1").value = primary;
+      document.getElementById("var2").value = secondary;
+    }
+
+    function applyFindReplace(str) {
       for (let i = 1; i <= 4; i++) {
-        const find = document.getElementById('find' + i).value;
-        const replace = document.getElementById('replace' + i).value;
+        const find = document.getElementById("find" + i).value;
+        const replace = document.getElementById("replace" + i).value;
         if (find) {
-          value = value.split(find).join(replace);
+          str = str.split(find).join(replace);
         }
       }
-      return value;
+      return str;
     }
 
     function applyTemplate() {
       let template = document.getElementById("template").value;
-      const values = {};
 
+      const vars = {};
       for (let i = 1; i <= 9; i++) {
-        const input = document.getElementById("var" + i);
-        if (input) {
-          const processed = applyFindReplace(input.value);
-          values["var" + i] = processed;
-        }
+        const raw = document.getElementById("var" + i).value;
+        vars["var" + i] = applyFindReplace(raw);
       }
 
-      // Replace each var in the template
-      Object.keys(values).forEach(key => {
+      Object.keys(vars).forEach(key => {
         const regex = new RegExp(key, "g");
-        template = template.replace(regex, values[key]);
+        template = template.replace(regex, vars[key]);
       });
 
       document.getElementById("output").value = template;
+      document.getElementById("preview").srcdoc = template;
+    }
+
+    function copyToClipboard() {
+      const output = document.getElementById("output");
+      output.select();
+      output.setSelectionRange(0, 99999); // For mobile devices
+      document.execCommand("copy");
+      alert("HTML copied to clipboard!");
     }
   </script>
 
