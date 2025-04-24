@@ -2,26 +2,58 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Simple JS Templating Engine</title>
+  <title>JS Templating Engine</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    textarea, input { width: 100%; margin-bottom: 10px; }
-    label { font-weight: bold; display: block; margin-top: 15px; }
-    button { padding: 10px 20px; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .grid label {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .grid input {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    textarea {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
 
   <h2>Part 1: Define Variables</h2>
-  <div id="variables">
-    <label>var1 (e.g. color)</label><input id="var1" type="text" value="#5b46c4">
-    <label>var2 (e.g. link)</label><input id="var2" type="text" value="https://www.advantagepetcenter.com/reservation/?utm_source=mailchimp&utm_medium=email&utm_campaign=summer25">
-    <label>var3 (e.g. link text)</label><input id="var3" type="text" value="Click Here">
-    <!-- Add more variable inputs as needed -->
+  <div class="grid" id="variables">
+    <div><label for="var1">var1</label><input id="var1" type="text"></div>
+    <div><label for="var2">var2</label><input id="var2" type="text"></div>
+    <div><label for="var3">var3</label><input id="var3" type="text"></div>
+    <div><label for="var4">var4</label><input id="var4" type="text"></div>
+    <div><label for="var5">var5</label><input id="var5" type="text"></div>
+    <div><label for="var6">var6</label><input id="var6" type="text"></div>
+    <div><label for="var7">var7</label><input id="var7" type="text"></div>
+    <div><label for="var8">var8</label><input id="var8" type="text"></div>
+    <div><label for="var9">var9</label><input id="var9" type="text"></div>
   </div>
 
   <h2>Part 2: Paste HTML Template</h2>
-  <textarea id="template" rows="6"><a href="var2" style="color:var1">var3</a></textarea>
+  <textarea id="template" rows="6" placeholder='e.g. <a href="var2" style="color:var1">var3</a>'></textarea>
 
   <button onclick="applyTemplate()">Generate HTML</button>
 
@@ -31,7 +63,7 @@
   <script>
     function applyTemplate() {
       let template = document.getElementById("template").value;
-      for (let i = 1; i <= 10; i++) {
+      for (let i = 1; i <= 9; i++) {
         let input = document.getElementById("var" + i);
         if (input) {
           let value = input.value;
