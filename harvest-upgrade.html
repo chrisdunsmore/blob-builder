@@ -2,82 +2,73 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Template Engine - FINAL</title>
+  <title>Template Engine - Simple Stable Version</title>
   <style>
-    :root {
-      --bg-color: #f9f9f9;
-      --text-color: #000;
-      --input-bg: #fff;
-      --input-border: #ccc;
-      --code-bg: #1e1e1e;
-      --code-text: #d4d4d4;
-      --tag-color: #569CD6;
-      --attr-color: #9CDCFE;
-      --value-color: #CE9178;
-    }
-    body.dark {
-      --bg-color: #1e1e1e;
-      --text-color: #ddd;
-      --input-bg: #2d2d2d;
-      --input-border: #555;
-      --code-bg: #2d2d2d;
-      --code-text: #ccc;
-      --tag-color: #4FC1FF;
-      --attr-color: #9CDCFE;
-      --value-color: #D69D85;
-    }
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: var(--bg-color);
-      color: var(--text-color);
+      background: #f9f9f9;
+      color: #333;
       padding: 20px;
-      transition: background 0.3s, color 0.3s;
     }
     h2 { margin-top: 30px; }
-    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
-    .replace-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .replace-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
     input, textarea {
-      width: 100%; box-sizing: border-box; padding: 6px;
-      border: 1px solid var(--input-border); border-radius: 4px;
-      font-family: monospace; background: var(--input-bg); color: var(--text-color);
+      width: 100%;
+      box-sizing: border-box;
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-family: monospace;
     }
-    textarea { resize: vertical; min-height: 100px; }
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
     button {
-      padding: 10px 15px; margin-top: 10px; margin-right: 10px;
-      cursor: pointer; font-weight: bold; border: none;
-      background: var(--tag-color); color: white; border-radius: 4px;
+      padding: 10px 15px;
+      margin-top: 10px;
+      margin-right: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      border: none;
+      background: #4CAF50;
+      color: white;
+      border-radius: 4px;
     }
-    .color-themes { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
-    .color-btn {
-      border: none; padding: 10px 14px; color: #fff;
-      cursor: pointer; font-weight: bold; border-radius: 5px;
-    }
-    pre.code-output {
-      background: var(--code-bg); color: var(--code-text);
-      padding: 15px; border-radius: 5px; overflow-x: auto;
-      font-family: Consolas, monospace; height: 400px;
+    pre {
+      background: #eee;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      font-family: Consolas, monospace;
     }
     iframe {
-      width: 100%; border: 1px solid var(--input-border);
-      margin-top: 10px; background: white; min-height: 200px;
+      width: 100%;
+      height: 300px;
+      border: 1px solid #ccc;
+      background: white;
     }
-    .hl-tag { color: var(--tag-color); }
-    .hl-attr { color: var(--attr-color); }
-    .hl-value { color: var(--value-color); }
   </style>
 </head>
-
 <body>
 
-<div style="display: flex; justify-content: space-between; align-items: center;">
-  <h1>Template Engine</h1>
-  <button onclick="toggleDarkMode()">🌙 Dark Mode</button>
-</div>
+<h1>Template Engine (Simple Version)</h1>
 
 <h2>Part 1: Define Variables</h2>
 <div class="grid">
-  <div><label for="var1">var1 (Primary)</label><input id="var1" oninput="updateColor(this)"></div>
-  <div><label for="var2">var2 (Secondary)</label><input id="var2" oninput="updateColor(this)"></div>
+  <div><label for="var1">var1 (Primary)</label><input id="var1"></div>
+  <div><label for="var2">var2 (Secondary)</label><input id="var2"></div>
   <div><label for="var3">var3</label><input id="var3"></div>
   <div><label for="var4">var4</label><input id="var4"></div>
   <div><label for="var5">var5</label><input id="var5"></div>
@@ -90,7 +81,7 @@
   <div><label for="var-training">var-training</label><input id="var-training"></div>
 </div>
 
-<h2>Optional: Find & Replace</h2>
+<h2>Optional: Find & Replace in Variables</h2>
 <div class="replace-grid">
   <div><label for="find1">Find 1</label><input id="find1"></div>
   <div><label for="replace1">Replace with</label><input id="replace1"></div>
@@ -112,25 +103,12 @@
 
 <h2>Part 3: HTML Output</h2>
 <button onclick="copyToClipboard()">📋 Copy HTML</button>
-<pre class="code-output"><code id="highlighted"></code></pre>
+<pre id="highlighted"></pre>
 
 <h2>Part 4: Live Preview</h2>
 <iframe id="preview"></iframe>
 
 <script>
-function toggleDarkMode() {
-  document.body.classList.toggle('dark');
-}
-function updateColor(input) {
-  const val = input.value.trim();
-  if (/^#[0-9a-f]{6}$/i.test(val)) {
-    input.style.backgroundColor = val;
-    input.style.color = "#fff";
-  } else {
-    input.style.backgroundColor = "";
-    input.style.color = "";
-  }
-}
 function harvestVariables() {
   const harvestText = document.getElementById("harvestArea").value;
   const anchors = [...harvestText.matchAll(/<a\s+[^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/gi)];
@@ -145,14 +123,16 @@ function harvestVariables() {
   });
   alert(matches ? 'Harvest complete!' : 'No matches found.');
 }
+
 function applyFindReplace(str) {
   for (let i = 1; i <= 4; i++) {
     const find = document.getElementById("find" + i).value;
     const replace = document.getElementById("replace" + i).value;
-    if (find) { str = str.split(find).join(replace); }
+    if (find) str = str.split(find).join(replace);
   }
   return str;
 }
+
 function applyTemplate() {
   let template = document.getElementById("template").value;
   const ids = ["var1","var2","var3","var4","var5","var6","var7","var8","var-boarding","var-daycare","var-grooming","var-training"];
@@ -160,9 +140,10 @@ function applyTemplate() {
     const value = applyFindReplace(document.getElementById(id).value);
     template = template.replaceAll("{" + id + "}", value);
   });
-  document.getElementById("highlighted").innerHTML = highlightHTML(template);
+  document.getElementById("highlighted").innerText = template;
   document.getElementById("preview").srcdoc = template;
 }
+
 function copyToClipboard() {
   const dummy = document.createElement("textarea");
   dummy.value = document.getElementById("highlighted").innerText;
@@ -171,16 +152,6 @@ function copyToClipboard() {
   document.execCommand("copy");
   document.body.removeChild(dummy);
   alert('HTML copied!');
-}
-function highlightHTML(html) {
-  return html
-    .replace(/<([a-z0-9\-]+)([^>]*)>/gi, (match, tag, attrs) =>
-      `<span class="hl-tag">&lt;${tag}</span><span class="hl-attr">${attrs}</span><span class="hl-tag">&gt;</span>`
-    )
-    .replace(/<\/([a-z0-9\-]+)>/gi, (match, tag) =>
-      `<span class="hl-tag">&lt;/${tag}&gt;</span>`
-    )
-    .replace(/"([^"]*)"/g, '<span class="hl-value">"$1"</span>');
 }
 </script>
 
