@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Template Engine - Final Fixed Version</title>
+  <title>Template Engine - Fresh Fixed Version</title>
   <style>
     :root {
       --bg-color: #f9f9f9;
@@ -66,31 +66,18 @@
     .hl-value { color: var(--value-color); }
   </style>
 </head>
+
 <body>
 
 <div style="display: flex; justify-content: space-between; align-items: center;">
   <h1>Template Engine</h1>
-  <button onclick="toggleDarkMode()">🌙 Toggle Dark Mode</button>
-</div>
-
-<h2>Color Theme Quick Select</h2>
-<div class="color-themes">
-  <button class="color-btn" style="background:#328833" onclick="setColors('#328833','#65b766')">Green</button>
-  <button class="color-btn" style="background:#5b46c4" onclick="setColors('#5b46c4','#745af5')">Violet</button>
-  <button class="color-btn" style="background:#c74200" onclick="setColors('#c74200','#ff8141')">Tawny Orange</button>
-  <button class="color-btn" style="background:#cc0100" onclick="setColors('#cc0100','#fe3725')">Red</button>
-  <button class="color-btn" style="background:#446775" onclick="setColors('#446775','#527c8e')">Slate Grey</button>
-  <button class="color-btn" style="background:#4b6a3c" onclick="setColors('#4b6a3c','#6a7a62')">Old Vine</button>
-  <button class="color-btn" style="background:#337d94" onclick="setColors('#337d94','#4b99b1')">Teal Blue</button>
-  <button class="color-btn" style="background:#19507f" onclick="setColors('#19507f','#296293')">Mid Blue</button>
-  <button class="color-btn" style="background:#3b4caa" onclick="setColors('#3b4caa','#5069e7')">Light Navy</button>
-  <button class="color-btn" style="background:#4a0d66" onclick="setColors('#4a0d66','#6e3d85')">Purple</button>
+  <button onclick="toggleDarkMode()">🌙 Dark Mode</button>
 </div>
 
 <h2>Part 1: Define Variables</h2>
 <div class="grid">
-  <div><label for="var1">var1 (Primary)</label><input id="var1" oninput="updateColor(this)"></div>
-  <div><label for="var2">var2 (Secondary)</label><input id="var2" oninput="updateColor(this)"></div>
+  <div><label for="var1">var1 (Primary Color)</label><input id="var1" oninput="updateColor(this)"></div>
+  <div><label for="var2">var2 (Secondary Color)</label><input id="var2" oninput="updateColor(this)"></div>
   <div><label for="var3">var3</label><input id="var3"></div>
   <div><label for="var4">var4</label><input id="var4"></div>
   <div><label for="var5">var5</label><input id="var5"></div>
@@ -119,7 +106,7 @@
 <textarea id="harvestArea" placeholder="Paste messy links here..."></textarea>
 <button onclick="harvestVariables()">🌾 Harvest URLs</button>
 
-<h2>Part 2B: Paste HTML Template</h2>
+<h2>Part 2B: HTML Template</h2>
 <textarea id="template" placeholder='Example: <a href="{var2}" style="color:{var1}">{var3}</a>'></textarea>
 <button onclick="applyTemplate()">Generate HTML</button>
 
@@ -134,12 +121,7 @@
 function toggleDarkMode() {
   document.body.classList.toggle('dark');
 }
-function setColors(primary, secondary) {
-  document.getElementById("var1").value = primary;
-  document.getElementById("var2").value = secondary;
-  updateColor(document.getElementById("var1"));
-  updateColor(document.getElementById("var2"));
-}
+
 function updateColor(input) {
   const val = input.value.trim();
   if (/^#[0-9a-f]{6}$/i.test(val)) {
@@ -150,6 +132,7 @@ function updateColor(input) {
     input.style.color = "";
   }
 }
+
 function harvestVariables() {
   const harvestText = document.getElementById("harvestArea").value;
   const anchors = [...harvestText.matchAll(/<a\s+[^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/gi)];
@@ -162,8 +145,9 @@ function harvestVariables() {
     if (text.includes('grooming')) { document.getElementById('var-grooming').value = url; matches++; }
     if (text.includes('training')) { document.getElementById('var-training').value = url; matches++; }
   });
-  alert(matches ? 'Harvest complete!' : 'No boarding/daycare/grooming/training links found.');
+  alert(matches ? 'Harvest complete!' : 'No matches found.');
 }
+
 function applyFindReplace(str) {
   for (let i = 1; i <= 4; i++) {
     const find = document.getElementById("find" + i).value;
@@ -172,6 +156,7 @@ function applyFindReplace(str) {
   }
   return str;
 }
+
 function applyTemplate() {
   let template = document.getElementById("template").value;
   const ids = ["var1","var2","var3","var4","var5","var6","var7","var8","var-boarding","var-daycare","var-grooming","var-training"];
@@ -182,6 +167,7 @@ function applyTemplate() {
   document.getElementById("highlighted").innerHTML = highlightHTML(template);
   document.getElementById("preview").srcdoc = template;
 }
+
 function copyToClipboard() {
   const dummy = document.createElement("textarea");
   dummy.value = document.getElementById("highlighted").textContent;
@@ -189,15 +175,13 @@ function copyToClipboard() {
   dummy.select();
   document.execCommand("copy");
   document.body.removeChild(dummy);
-  alert('HTML copied to clipboard!');
+  alert('HTML copied!');
 }
+
 function highlightHTML(html) {
   return html
-    .replace(/<\s*([a-zA-Z0-9\-]+)([^>]*)>/g, (_, tag, attrs) => 
-      `<span class="hl-tag">&lt;${tag}</span><span class="hl-attr">${attrs}</span><span class="hl-tag">&gt;</span>`
-    )
-    .replace(/<\/\s*([a-zA-Z0-9\-]+)\s*>/g, (_, tag) =>
-      `<span class="hl-tag">&lt;/${tag}&gt;</span>`
+    .replace(/(<\/?[a-zA-Z0-9\-]+)([^>]*?)>/g, (_, tag, attrs) =>
+      `<span class="hl-tag">${tag}</span><span class="hl-attr">${attrs}</span><span class="hl-tag">&gt;</span>`
     )
     .replace(/"([^"]*)"/g, '<span class="hl-value">"$1"</span>');
 }
