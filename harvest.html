@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Template Engine - Compact + Dark Mode</title>
+  <title>Template Engine with Special Variables + Dark Mode</title>
   <style>
     :root {
       --bg-color: #f9f9f9;
@@ -30,9 +30,9 @@
 
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      padding: 20px;
       background: var(--bg-color);
       color: var(--text-color);
+      padding: 20px;
       transition: background 0.3s, color 0.3s;
     }
 
@@ -50,6 +50,13 @@
     .grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .special-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
       gap: 10px;
       margin-bottom: 20px;
     }
@@ -80,7 +87,6 @@
       color: var(--text-color);
       border-radius: 4px;
       font-family: monospace;
-      transition: background 0.3s, color 0.3s, border 0.3s;
     }
 
     textarea {
@@ -123,7 +129,6 @@
       overflow: auto;
       height: 400px;
       font-family: Consolas, monospace;
-      transition: background 0.3s, color 0.3s;
     }
 
     /* Syntax highlight */
@@ -161,17 +166,24 @@
     <button class="color-btn" style="background:#4a0d66" onclick="setColors('#4a0d66','#6e3d85')">Purple</button>
   </div>
 
-  <h2>Part 1: Define Variables</h2>
+  <h2>Part 1: Variables</h2>
   <div class="grid">
-    <div><label for="var1">var1 (Primary Color)</label><input id="var1" oninput="updateColor(this)"></div>
-    <div><label for="var2">var2 (Secondary Color)</label><input id="var2" oninput="updateColor(this)"></div>
-    <div><label for="var3">var3</label><input id="var3"></div>
-    <div><label for="var4">var4</label><input id="var4"></div>
-    <div><label for="var5">var5</label><input id="var5"></div>
-    <div><label for="var6">var6</label><input id="var6"></div>
-    <div><label for="var7">var7</label><input id="var7"></div>
-    <div><label for="var8">var8</label><input id="var8"></div>
-    <div><label for="var9">var9</label><input id="var9"></div>
+    <div><label for="var1">{var1} (Primary)</label><input id="var1" oninput="updateColor(this)"></div>
+    <div><label for="var2">{var2} (Secondary)</label><input id="var2" oninput="updateColor(this)"></div>
+    <div><label for="var3">{var3}</label><input id="var3"></div>
+    <div><label for="var4">{var4}</label><input id="var4"></div>
+    <div><label for="var5">{var5}</label><input id="var5"></div>
+    <div><label for="var6">{var6}</label><input id="var6"></div>
+    <div><label for="var7">{var7}</label><input id="var7"></div>
+    <div><label for="var8">{var8}</label><input id="var8"></div>
+  </div>
+
+  <h2>Special Variables</h2>
+  <div class="special-grid">
+    <div><label for="boarding">{boarding}</label><input id="boarding"></div>
+    <div><label for="daycare">{daycare}</label><input id="daycare"></div>
+    <div><label for="grooming">{grooming}</label><input id="grooming"></div>
+    <div><label for="training">{training}</label><input id="training"></div>
   </div>
 
   <h2>Optional: Find & Replace</h2>
@@ -189,14 +201,14 @@
   <h2>Part 2: Template and Action</h2>
   <div class="flex-2">
     <div class="half">
-      <textarea id="template" placeholder='e.g. <a href="var2" style="color:var1">var3</a>'></textarea>
+      <textarea id="template" placeholder='Paste template here using {var1}, {boarding}, etc.'></textarea>
     </div>
     <div class="half" style="display: flex; align-items: flex-start;">
       <button onclick="applyTemplate()" style="width: 100%;">Generate HTML</button>
     </div>
   </div>
 
-  <h2>Part 3 and Part 4: Output and Live Preview</h2>
+  <h2>Part 3 and 4: Output and Preview</h2>
   <div class="flex-2">
     <div class="half">
       <button onclick="copyToClipboard()">📋 Copy HTML</button>
@@ -245,10 +257,12 @@ function applyTemplate() {
   let template = document.getElementById("template").value;
 
   const vars = {};
-  for (let i = 1; i <= 9; i++) {
-    const raw = document.getElementById("var" + i).value;
-    vars["var" + i] = applyFindReplace(raw);
+  for (let i = 1; i <= 8; i++) {
+    vars["{var" + i + "}"] = applyFindReplace(document.getElementById("var" + i).value);
   }
+  ["boarding", "daycare", "grooming", "training"].forEach(name => {
+    vars["{" + name + "}"] = applyFindReplace(document.getElementById(name).value);
+  });
 
   Object.keys(vars).forEach(key => {
     const regex = new RegExp(key, "g");
