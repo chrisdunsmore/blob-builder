@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Template Engine with Special Variables + Dark Mode</title>
+  <title>Template Engine - Harvest, Dark Mode, Full</title>
   <style>
     :root {
       --bg-color: #f9f9f9;
@@ -47,18 +47,18 @@
       margin-bottom: 20px;
     }
 
-    .grid {
+    .grid, .special-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
       gap: 10px;
       margin-bottom: 20px;
     }
 
+    .grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
     .special-grid {
-      display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      margin-bottom: 20px;
     }
 
     .replace-grid {
@@ -102,7 +102,6 @@
       border-radius: 4px;
       background: var(--tag-color);
       color: white;
-      transition: background 0.3s;
     }
 
     .color-themes {
@@ -131,20 +130,20 @@
       font-family: Consolas, monospace;
     }
 
-    /* Syntax highlight */
-    .hl-tag { color: var(--tag-color); }
-    .hl-attr { color: var(--attr-color); }
-    .hl-value { color: var(--value-color); }
-    .hl-text { color: var(--code-text); }
-
     iframe {
       width: 100%;
       min-height: 400px;
       border: 1px solid var(--input-border);
       background: white;
     }
+
+    .hl-tag { color: var(--tag-color); }
+    .hl-attr { color: var(--attr-color); }
+    .hl-value { color: var(--value-color); }
+    .hl-text { color: var(--code-text); }
   </style>
 </head>
+
 <body>
 
   <div class="top-bar">
@@ -186,29 +185,24 @@
     <div><label for="training">{training}</label><input id="training"></div>
   </div>
 
-  <h2>Optional: Find & Replace</h2>
+  <h2>Part 2A: Paste Template</h2>
+  <textarea id="template" placeholder="Paste your template with {var1}, {boarding}, etc. here..."></textarea>
+
+  <h2>Part 2B: Find & Replace (before injection)</h2>
   <div class="replace-grid">
     <div><label for="find1">Find 1</label><input id="find1"></div>
-    <div><label for="replace1">Replace with</label><input id="replace1"></div>
+    <div><label for="replace1">Replace 1</label><input id="replace1"></div>
     <div><label for="find2">Find 2</label><input id="find2"></div>
-    <div><label for="replace2">Replace with</label><input id="replace2"></div>
+    <div><label for="replace2">Replace 2</label><input id="replace2"></div>
     <div><label for="find3">Find 3</label><input id="find3"></div>
-    <div><label for="replace3">Replace with</label><input id="replace3"></div>
+    <div><label for="replace3">Replace 3</label><input id="replace3"></div>
     <div><label for="find4">Find 4</label><input id="find4"></div>
-    <div><label for="replace4">Replace with</label><input id="replace4"></div>
+    <div><label for="replace4">Replace 4</label><input id="replace4"></div>
   </div>
 
-  <h2>Part 2: Template and Action</h2>
-  <div class="flex-2">
-    <div class="half">
-      <textarea id="template" placeholder='Paste template here using {var1}, {boarding}, etc.'></textarea>
-    </div>
-    <div class="half" style="display: flex; align-items: flex-start;">
-      <button onclick="applyTemplate()" style="width: 100%;">Generate HTML</button>
-    </div>
-  </div>
+  <button onclick="applyTemplate()">Harvest & Inject 🔥</button>
 
-  <h2>Part 3 and 4: Output and Preview</h2>
+  <h2>Part 3 and 4: Output + Preview</h2>
   <div class="flex-2">
     <div class="half">
       <button onclick="copyToClipboard()">📋 Copy HTML</button>
@@ -255,18 +249,18 @@ function applyFindReplace(str) {
 
 function applyTemplate() {
   let template = document.getElementById("template").value;
-
   const vars = {};
+
   for (let i = 1; i <= 8; i++) {
     vars["{var" + i + "}"] = applyFindReplace(document.getElementById("var" + i).value);
   }
+
   ["boarding", "daycare", "grooming", "training"].forEach(name => {
     vars["{" + name + "}"] = applyFindReplace(document.getElementById(name).value);
   });
 
   Object.keys(vars).forEach(key => {
-    const regex = new RegExp(key, "g");
-    template = template.replace(regex, vars[key]);
+    template = template.replaceAll(key, vars[key]);
   });
 
   document.getElementById("preview").srcdoc = template;
