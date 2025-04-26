@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Template Engine - Fresh Fixed Version</title>
+  <title>Template Engine - FINAL</title>
   <style>
     :root {
       --bg-color: #f9f9f9;
@@ -76,8 +76,8 @@
 
 <h2>Part 1: Define Variables</h2>
 <div class="grid">
-  <div><label for="var1">var1 (Primary Color)</label><input id="var1" oninput="updateColor(this)"></div>
-  <div><label for="var2">var2 (Secondary Color)</label><input id="var2" oninput="updateColor(this)"></div>
+  <div><label for="var1">var1 (Primary)</label><input id="var1" oninput="updateColor(this)"></div>
+  <div><label for="var2">var2 (Secondary)</label><input id="var2" oninput="updateColor(this)"></div>
   <div><label for="var3">var3</label><input id="var3"></div>
   <div><label for="var4">var4</label><input id="var4"></div>
   <div><label for="var5">var5</label><input id="var5"></div>
@@ -93,13 +93,13 @@
 <h2>Optional: Find & Replace</h2>
 <div class="replace-grid">
   <div><label for="find1">Find 1</label><input id="find1"></div>
-  <div><label for="replace1">Replace 1</label><input id="replace1"></div>
+  <div><label for="replace1">Replace with</label><input id="replace1"></div>
   <div><label for="find2">Find 2</label><input id="find2"></div>
-  <div><label for="replace2">Replace 2</label><input id="replace2"></div>
+  <div><label for="replace2">Replace with</label><input id="replace2"></div>
   <div><label for="find3">Find 3</label><input id="find3"></div>
-  <div><label for="replace3">Replace 3</label><input id="replace3"></div>
+  <div><label for="replace3">Replace with</label><input id="replace3"></div>
   <div><label for="find4">Find 4</label><input id="find4"></div>
-  <div><label for="replace4">Replace 4</label><input id="replace4"></div>
+  <div><label for="replace4">Replace with</label><input id="replace4"></div>
 </div>
 
 <h2>Part 2A: Harvest Area</h2>
@@ -121,7 +121,6 @@
 function toggleDarkMode() {
   document.body.classList.toggle('dark');
 }
-
 function updateColor(input) {
   const val = input.value.trim();
   if (/^#[0-9a-f]{6}$/i.test(val)) {
@@ -132,7 +131,6 @@ function updateColor(input) {
     input.style.color = "";
   }
 }
-
 function harvestVariables() {
   const harvestText = document.getElementById("harvestArea").value;
   const anchors = [...harvestText.matchAll(/<a\s+[^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/gi)];
@@ -147,7 +145,6 @@ function harvestVariables() {
   });
   alert(matches ? 'Harvest complete!' : 'No matches found.');
 }
-
 function applyFindReplace(str) {
   for (let i = 1; i <= 4; i++) {
     const find = document.getElementById("find" + i).value;
@@ -156,7 +153,6 @@ function applyFindReplace(str) {
   }
   return str;
 }
-
 function applyTemplate() {
   let template = document.getElementById("template").value;
   const ids = ["var1","var2","var3","var4","var5","var6","var7","var8","var-boarding","var-daycare","var-grooming","var-training"];
@@ -167,21 +163,22 @@ function applyTemplate() {
   document.getElementById("highlighted").innerHTML = highlightHTML(template);
   document.getElementById("preview").srcdoc = template;
 }
-
 function copyToClipboard() {
   const dummy = document.createElement("textarea");
-  dummy.value = document.getElementById("highlighted").textContent;
+  dummy.value = document.getElementById("highlighted").innerText;
   document.body.appendChild(dummy);
   dummy.select();
   document.execCommand("copy");
   document.body.removeChild(dummy);
   alert('HTML copied!');
 }
-
 function highlightHTML(html) {
   return html
-    .replace(/(<\/?[a-zA-Z0-9\-]+)([^>]*?)>/g, (_, tag, attrs) =>
-      `<span class="hl-tag">${tag}</span><span class="hl-attr">${attrs}</span><span class="hl-tag">&gt;</span>`
+    .replace(/<([a-z0-9\-]+)([^>]*)>/gi, (match, tag, attrs) =>
+      `<span class="hl-tag">&lt;${tag}</span><span class="hl-attr">${attrs}</span><span class="hl-tag">&gt;</span>`
+    )
+    .replace(/<\/([a-z0-9\-]+)>/gi, (match, tag) =>
+      `<span class="hl-tag">&lt;/${tag}&gt;</span>`
     )
     .replace(/"([^"]*)"/g, '<span class="hl-value">"$1"</span>');
 }
