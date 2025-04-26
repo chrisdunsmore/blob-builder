@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Template Engine - Simple Stable Version</title>
+  <title>Template Engine - Final with Colors and Clean Harvest</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -46,6 +46,20 @@
       color: white;
       border-radius: 4px;
     }
+    .color-themes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .color-btn {
+      border: none;
+      padding: 10px 14px;
+      color: #fff;
+      cursor: pointer;
+      font-weight: bold;
+      border-radius: 5px;
+    }
     pre {
       background: #eee;
       padding: 15px;
@@ -63,7 +77,21 @@
 </head>
 <body>
 
-<h1>Template Engine (Simple Version)</h1>
+<h1>Template Engine (Final Stable Version)</h1>
+
+<h2>Color Theme Quick Select</h2>
+<div class="color-themes">
+  <button class="color-btn" style="background:#328833" onclick="setColors('#328833','#65b766')">Green</button>
+  <button class="color-btn" style="background:#5b46c4" onclick="setColors('#5b46c4','#745af5')">Violet</button>
+  <button class="color-btn" style="background:#c74200" onclick="setColors('#c74200','#ff8141')">Tawny Orange</button>
+  <button class="color-btn" style="background:#cc0100" onclick="setColors('#cc0100','#fe3725')">Red</button>
+  <button class="color-btn" style="background:#446775" onclick="setColors('#446775','#527c8e')">Slate Grey</button>
+  <button class="color-btn" style="background:#4b6a3c" onclick="setColors('#4b6a3c','#6a7a62')">Old Vine</button>
+  <button class="color-btn" style="background:#337d94" onclick="setColors('#337d94','#4b99b1')">Teal Blue</button>
+  <button class="color-btn" style="background:#19507f" onclick="setColors('#19507f','#296293')">Mid Blue</button>
+  <button class="color-btn" style="background:#3b4caa" onclick="setColors('#3b4caa','#5069e7')">Light Navy</button>
+  <button class="color-btn" style="background:#4a0d66" onclick="setColors('#4a0d66','#6e3d85')">Purple</button>
+</div>
 
 <h2>Part 1: Define Variables</h2>
 <div class="grid">
@@ -109,12 +137,20 @@
 <iframe id="preview"></iframe>
 
 <script>
+function setColors(primary, secondary) {
+  document.getElementById("var1").value = primary;
+  document.getElementById("var2").value = secondary;
+}
+
 function harvestVariables() {
   const harvestText = document.getElementById("harvestArea").value;
   const anchors = [...harvestText.matchAll(/<a\s+[^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/gi)];
   let matches = 0;
   anchors.forEach(match => {
     let url = match[1];
+    if (url.includes('?')) {
+      url = url.split('?')[0]; // Clean URL: remove ?utm stuff
+    }
     const text = match[2].toLowerCase();
     if (text.includes('boarding')) { document.getElementById('var-boarding').value = url; matches++; }
     if (text.includes('daycare')) { document.getElementById('var-daycare').value = url; matches++; }
