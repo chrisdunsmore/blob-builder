@@ -2,43 +2,150 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Template Engine with Harvest Area First</title>
+  <title>Template Engine - Compact + Dark Mode</title>
   <style>
-    body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #f9f9f9; }
-    h2 { margin-top: 30px; }
-    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
-    .replace-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+    :root {
+      --bg-color: #f9f9f9;
+      --text-color: #000;
+      --input-bg: #fff;
+      --input-border: #ccc;
+      --code-bg: #1e1e1e;
+      --code-text: #d4d4d4;
+      --tag-color: #569CD6;
+      --attr-color: #9CDCFE;
+      --value-color: #CE9178;
+    }
+
+    body.dark {
+      --bg-color: #1e1e1e;
+      --text-color: #ddd;
+      --input-bg: #2d2d2d;
+      --input-border: #555;
+      --code-bg: #2d2d2d;
+      --code-text: #ccc;
+      --tag-color: #4FC1FF;
+      --attr-color: #9CDCFE;
+      --value-color: #D69D85;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+      background: var(--bg-color);
+      color: var(--text-color);
+      transition: background 0.3s, color 0.3s;
+    }
+
+    h2 {
+      margin-top: 30px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .replace-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .flex-2 {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .half {
+      flex: 1;
+    }
+
     input, textarea {
-      width: 100%; box-sizing: border-box; padding: 6px;
-      border: 1px solid #ccc; border-radius: 4px; font-family: monospace;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 6px;
+      border: 1px solid var(--input-border);
+      background: var(--input-bg);
+      color: var(--text-color);
+      border-radius: 4px;
+      font-family: monospace;
+      transition: background 0.3s, color 0.3s, border 0.3s;
     }
-    textarea { resize: vertical; min-height: 100px; }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
     button {
-      padding: 10px 15px; margin-top: 10px; margin-right: 10px;
-      cursor: pointer; font-weight: bold;
+      padding: 10px 15px;
+      cursor: pointer;
+      font-weight: bold;
+      border: none;
+      border-radius: 4px;
+      background: var(--tag-color);
+      color: white;
+      transition: background 0.3s;
     }
+
     .color-themes {
-      display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
     }
+
     .color-btn {
-      border: none; padding: 10px 14px; color: #fff;
-      cursor: pointer; font-weight: bold; border-radius: 5px;
+      border: none;
+      padding: 10px 14px;
+      color: #fff;
+      cursor: pointer;
+      font-weight: bold;
+      border-radius: 5px;
     }
+
     pre.code-output {
-      background: #1e1e1e; color: #d4d4d4;
-      padding: 15px; border-radius: 5px; overflow-x: auto;
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 15px;
+      border-radius: 5px;
+      overflow: auto;
+      height: 400px;
       font-family: Consolas, monospace;
+      transition: background 0.3s, color 0.3s;
     }
-    .hl-tag { color: #569CD6; }
-    .hl-attr { color: #9CDCFE; }
-    .hl-value { color: #CE9178; }
+
+    /* Syntax highlight */
+    .hl-tag { color: var(--tag-color); }
+    .hl-attr { color: var(--attr-color); }
+    .hl-value { color: var(--value-color); }
+    .hl-text { color: var(--code-text); }
+
     iframe {
-      width: 100%; height: 200px; border: 1px solid #ccc;
-      margin-top: 10px; background: white;
+      width: 100%;
+      min-height: 400px;
+      border: 1px solid var(--input-border);
+      background: white;
     }
   </style>
 </head>
 <body>
+
+  <div class="top-bar">
+    <h1>Template Engine</h1>
+    <button onclick="toggleDarkMode()">🌙 Toggle Dark Mode</button>
+  </div>
 
   <h2>Color Theme Quick Select</h2>
   <div class="color-themes">
@@ -64,13 +171,10 @@
     <div><label for="var6">var6</label><input id="var6"></div>
     <div><label for="var7">var7</label><input id="var7"></div>
     <div><label for="var8">var8</label><input id="var8"></div>
-    <div><label for="var-boarding">var-boarding</label><input id="var-boarding"></div>
-    <div><label for="var-daycare">var-daycare</label><input id="var-daycare"></div>
-    <div><label for="var-grooming">var-grooming</label><input id="var-grooming"></div>
-    <div><label for="var-training">var-training</label><input id="var-training"></div>
+    <div><label for="var9">var9</label><input id="var9"></div>
   </div>
 
-  <h2>Optional: Find & Replace in Variables</h2>
+  <h2>Optional: Find & Replace</h2>
   <div class="replace-grid">
     <div><label for="find1">Find 1</label><input id="find1"></div>
     <div><label for="replace1">Replace with</label><input id="replace1"></div>
@@ -82,22 +186,32 @@
     <div><label for="replace4">Replace with</label><input id="replace4"></div>
   </div>
 
-  <h2>Part 2A: Harvest Area</h2>
-  <textarea id="harvestArea" placeholder='Paste messy links here to extract Boarding, Daycare, Grooming, Training URLs'></textarea>
-  <button onclick="harvestVariables()">🌾 Harvest Boarding/Daycare/Grooming/Training URLs</button>
+  <h2>Part 2: Template and Action</h2>
+  <div class="flex-2">
+    <div class="half">
+      <textarea id="template" placeholder='e.g. <a href="var2" style="color:var1">var3</a>'></textarea>
+    </div>
+    <div class="half" style="display: flex; align-items: flex-start;">
+      <button onclick="applyTemplate()" style="width: 100%;">Generate HTML</button>
+    </div>
+  </div>
 
-  <h2>Part 2B: Paste HTML Template</h2>
-  <textarea id="template" placeholder='Example: &lt;a href="{var2}" style="color:{var1}"&gt;{var3}&lt;/a&gt;'></textarea>
-  <button onclick="applyTemplate()">Generate HTML</button>
-
-  <h2>Part 3: HTML Output (Syntax Highlighted)</h2>
-  <button onclick="copyToClipboard()">📋 Copy to Clipboard</button>
-  <pre id="highlighted" class="code-output"></pre>
-
-  <h2>Part 4: Live Preview</h2>
-  <iframe id="preview"></iframe>
+  <h2>Part 3 and Part 4: Output and Live Preview</h2>
+  <div class="flex-2">
+    <div class="half">
+      <button onclick="copyToClipboard()">📋 Copy HTML</button>
+      <pre id="highlighted" class="code-output"></pre>
+    </div>
+    <div class="half">
+      <iframe id="preview"></iframe>
+    </div>
+  </div>
 
 <script>
+function toggleDarkMode() {
+  document.body.classList.toggle('dark');
+}
+
 function setColors(primary, secondary) {
   document.getElementById("var1").value = primary;
   document.getElementById("var2").value = secondary;
@@ -116,41 +230,6 @@ function updateColor(input) {
   }
 }
 
-function harvestVariables() {
-  const harvestText = document.getElementById("harvestArea").value;
-  const anchors = [...harvestText.matchAll(/<a\s+[^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/gi)];
-  let summary = '';
-
-  anchors.forEach(match => {
-    let url = match[1];
-    const text = match[2].toLowerCase().trim();
-
-    if (url.includes('?')) {
-      url = url.split('?')[0];
-    }
-
-    if (text.includes('boarding')) {
-      document.getElementById('var-boarding').value = url;
-      summary += `Boarding URL: ${url}\n`;
-    } else if (text.includes('daycare')) {
-      document.getElementById('var-daycare').value = url;
-      summary += `Daycare URL: ${url}\n`;
-    } else if (text.includes('grooming')) {
-      document.getElementById('var-grooming').value = url;
-      summary += `Grooming URL: ${url}\n`;
-    } else if (text.includes('training')) {
-      document.getElementById('var-training').value = url;
-      summary += `Training URL: ${url}\n`;
-    }
-  });
-
-  if (summary) {
-    alert('Harvested URLs:\n\n' + summary);
-  } else {
-    alert('No matching Boarding/Daycare/Grooming/Training links found.');
-  }
-}
-
 function applyFindReplace(str) {
   for (let i = 1; i <= 4; i++) {
     const find = document.getElementById("find" + i).value;
@@ -164,19 +243,15 @@ function applyFindReplace(str) {
 
 function applyTemplate() {
   let template = document.getElementById("template").value;
-  const variableNames = [
-    "var1", "var2", "var3", "var4", "var5", "var6", "var7", "var8",
-    "var-boarding", "var-daycare", "var-grooming", "var-training"
-  ];
 
   const vars = {};
-  variableNames.forEach(name => {
-    const raw = document.getElementById(name).value;
-    vars[`{${name}}`] = applyFindReplace(raw);
-  });
+  for (let i = 1; i <= 9; i++) {
+    const raw = document.getElementById("var" + i).value;
+    vars["var" + i] = applyFindReplace(raw);
+  }
 
   Object.keys(vars).forEach(key => {
-    const regex = new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "g");
+    const regex = new RegExp(key, "g");
     template = template.replace(regex, vars[key]);
   });
 
@@ -191,7 +266,7 @@ function copyToClipboard() {
   dummy.select();
   document.execCommand("copy");
   document.body.removeChild(dummy);
-  alert('HTML copied to clipboard!');
+  alert("HTML copied to clipboard!");
 }
 
 function highlightHTML(html) {
