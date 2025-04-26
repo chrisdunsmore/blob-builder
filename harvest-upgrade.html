@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Template Engine with Harvest + Dark Mode (Fixed Highlighting)</title>
+  <title>Template Engine - Final Fixed Version</title>
   <style>
     :root {
       --bg-color: #f9f9f9;
@@ -103,16 +103,16 @@
   <div><label for="var-training">var-training</label><input id="var-training"></div>
 </div>
 
-<h2>Optional: Find & Replace in Variables</h2>
+<h2>Optional: Find & Replace</h2>
 <div class="replace-grid">
   <div><label for="find1">Find 1</label><input id="find1"></div>
-  <div><label for="replace1">Replace with</label><input id="replace1"></div>
+  <div><label for="replace1">Replace 1</label><input id="replace1"></div>
   <div><label for="find2">Find 2</label><input id="find2"></div>
-  <div><label for="replace2">Replace with</label><input id="replace2"></div>
+  <div><label for="replace2">Replace 2</label><input id="replace2"></div>
   <div><label for="find3">Find 3</label><input id="find3"></div>
-  <div><label for="replace3">Replace with</label><input id="replace3"></div>
+  <div><label for="replace3">Replace 3</label><input id="replace3"></div>
   <div><label for="find4">Find 4</label><input id="find4"></div>
-  <div><label for="replace4">Replace with</label><input id="replace4"></div>
+  <div><label for="replace4">Replace 4</label><input id="replace4"></div>
 </div>
 
 <h2>Part 2A: Harvest Area</h2>
@@ -134,14 +134,12 @@
 function toggleDarkMode() {
   document.body.classList.toggle('dark');
 }
-
 function setColors(primary, secondary) {
   document.getElementById("var1").value = primary;
   document.getElementById("var2").value = secondary;
   updateColor(document.getElementById("var1"));
   updateColor(document.getElementById("var2"));
 }
-
 function updateColor(input) {
   const val = input.value.trim();
   if (/^#[0-9a-f]{6}$/i.test(val)) {
@@ -152,7 +150,6 @@ function updateColor(input) {
     input.style.color = "";
   }
 }
-
 function harvestVariables() {
   const harvestText = document.getElementById("harvestArea").value;
   const anchors = [...harvestText.matchAll(/<a\s+[^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/gi)];
@@ -167,7 +164,6 @@ function harvestVariables() {
   });
   alert(matches ? 'Harvest complete!' : 'No boarding/daycare/grooming/training links found.');
 }
-
 function applyFindReplace(str) {
   for (let i = 1; i <= 4; i++) {
     const find = document.getElementById("find" + i).value;
@@ -176,7 +172,6 @@ function applyFindReplace(str) {
   }
   return str;
 }
-
 function applyTemplate() {
   let template = document.getElementById("template").value;
   const ids = ["var1","var2","var3","var4","var5","var6","var7","var8","var-boarding","var-daycare","var-grooming","var-training"];
@@ -187,7 +182,6 @@ function applyTemplate() {
   document.getElementById("highlighted").innerHTML = highlightHTML(template);
   document.getElementById("preview").srcdoc = template;
 }
-
 function copyToClipboard() {
   const dummy = document.createElement("textarea");
   dummy.value = document.getElementById("highlighted").textContent;
@@ -197,12 +191,15 @@ function copyToClipboard() {
   document.body.removeChild(dummy);
   alert('HTML copied to clipboard!');
 }
-
 function highlightHTML(html) {
-  return html.replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/(&lt;\/?[a-z]+)(.*?)(\/?&gt;)/gi, (_,tag,attrs,close) =>
-      `<span class="hl-tag">${tag}</span><span class="hl-attr">${attrs}</span><span class="hl-tag">${close}</span>`)
-    .replace(/"(.*?)"/g,'<span class="hl-value">"$1"</span>');
+  return html
+    .replace(/<\s*([a-zA-Z0-9\-]+)([^>]*)>/g, (_, tag, attrs) => 
+      `<span class="hl-tag">&lt;${tag}</span><span class="hl-attr">${attrs}</span><span class="hl-tag">&gt;</span>`
+    )
+    .replace(/<\/\s*([a-zA-Z0-9\-]+)\s*>/g, (_, tag) =>
+      `<span class="hl-tag">&lt;/${tag}&gt;</span>`
+    )
+    .replace(/"([^"]*)"/g, '<span class="hl-value">"$1"</span>');
 }
 </script>
 
