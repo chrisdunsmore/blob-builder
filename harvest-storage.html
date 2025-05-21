@@ -146,10 +146,13 @@
   </div>
 </details>
 
-<h2>Part 2A: Harvest Area</h2>
-<textarea id="harvestArea" placeholder="Paste messy links here..."></textarea>
-<button onclick="harvestVariables()">🌾 Harvest URLs</button>
+<details>
+  <h2>Part 2A: Harvest Area</h2>
+  <textarea id="harvestArea" placeholder="Paste messy links here..."></textarea>
+  <button onclick="harvestVariables()">🌾 Harvest URLs</button>
+</details>
 
+<details>
 <h2>Part 2B: HTML Template</h2>
 <div class="template-controls">
   <input type="text" id="templateName" placeholder="Template name">
@@ -162,7 +165,8 @@
 </div>
 <textarea id="template" placeholder='Example: <a href="{var2}" style="color:{var1}">{var3}</a>'></textarea>
 <button onclick="applyTemplate()">Generate HTML</button>
-
+</details>
+  
 <h2>Part 3: HTML Output</h2>
 <button onclick="copyToClipboard()">📋 Copy HTML</button>
 <pre id="highlighted"><code class="language-html"></code></pre>
