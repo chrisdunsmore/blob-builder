@@ -93,6 +93,10 @@
       padding: 8px 12px;
     }
   </style>
+  <!-- Highlight.js CSS and JS for syntax highlighting -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/xml.min.js"></script>
 </head>
 <body>
 
@@ -159,7 +163,7 @@
 
 <h2>Part 3: HTML Output</h2>
 <button onclick="copyToClipboard()">📋 Copy HTML</button>
-<pre id="highlighted"></pre>
+<pre id="highlighted"><code class="language-html"></code></pre>
 
 <h2>Part 4: Live Preview</h2>
 <iframe id="preview"></iframe>
@@ -190,7 +194,7 @@ function harvestVariables() {
   anchors.forEach(match => {
     let url = match[1];
     if (url.includes('?')) {
-      url = url.split('?')[0]; // Clean URL: remove ?utm stuff
+      url = url.split('?')[0];
     }
     const text = match[2].toLowerCase();
     if (text.includes('boarding')) { document.getElementById('var-boarding').value = url; matches++; }
@@ -217,13 +221,18 @@ function applyTemplate() {
     const value = applyFindReplace(document.getElementById(id).value);
     template = template.replaceAll("{" + id + "}", value);
   });
-  document.getElementById("highlighted").innerText = template;
+  // Set as textContent for safe HTML display in code block
+  document.getElementById("highlighted").querySelector("code").textContent = template;
+  // Highlight.js colorizes it
+  hljs.highlightElement(document.getElementById("highlighted").querySelector("code"));
+  // Live preview
   document.getElementById("preview").srcdoc = template;
 }
 
 function copyToClipboard() {
+  const codeEl = document.getElementById("highlighted").querySelector("code");
   const dummy = document.createElement("textarea");
-  dummy.value = document.getElementById("highlighted").innerText;
+  dummy.value = codeEl.textContent;
   document.body.appendChild(dummy);
   dummy.select();
   document.execCommand("copy");
@@ -288,7 +297,6 @@ function updateTemplateList() {
     option.textContent = name;
     select.appendChild(option);
   });
-  // Try to restore selection
   if (templates[currentValue]) select.value = currentValue;
 }
 
