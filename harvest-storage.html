@@ -147,24 +147,24 @@
 </details>
 
 <details>
-  <h2>Part 2A: Harvest Area</h2>
+  <summary><h2>Part 2A: Harvest Area</h2></summary>
   <textarea id="harvestArea" placeholder="Paste messy links here..."></textarea>
   <button onclick="harvestVariables()">🌾 Harvest URLs</button>
 </details>
 
 <details>
-<h2>Part 2B: HTML Template</h2>
-<div class="template-controls">
-  <input type="text" id="templateName" placeholder="Template name">
-  <button onclick="saveTemplate()">Save Template</button>
-  <select id="templateList">
-    <option value="">-- Select Template --</option>
-  </select>
-  <button onclick="loadTemplate()">Load</button>
-  <button onclick="deleteTemplate()">Delete</button>
-</div>
-<textarea id="template" placeholder='Example: <a href="{var2}" style="color:{var1}">{var3}</a>'></textarea>
-<button onclick="applyTemplate()">Generate HTML</button>
+  <summary><h2>Part 2B: HTML Template</h2></summary>
+  <div class="template-controls">
+    <input type="text" id="templateName" placeholder="Template name">
+    <button onclick="saveTemplate()">Save Template</button>
+    <select id="templateList">
+      <option value="">-- Select Template --</option>
+    </select>
+    <button onclick="loadTemplate()">Load</button>
+    <button onclick="deleteTemplate()">Delete</button>
+  </div>
+  <textarea id="template" placeholder='Example: <a href="{var2}" style="color:{var1}">{var3}</a>'></textarea>
+  <button onclick="applyTemplate()">Generate HTML</button>
 </details>
   
 <h2>Part 3: HTML Output</h2>
