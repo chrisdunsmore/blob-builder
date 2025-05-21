@@ -81,16 +81,16 @@
 
 <h2>Color Theme Quick Select</h2>
 <div class="color-themes">
-  <button class="color-btn" style="background:#328833" onclick="setColors('#328833','#65b766')">Green</button>
-  <button class="color-btn" style="background:#5b46c4" onclick="setColors('#5b46c4','#745af5')">Violet</button>
-  <button class="color-btn" style="background:#c74200" onclick="setColors('#c74200','#ff8141')">Tawny Orange</button>
-  <button class="color-btn" style="background:#cc0100" onclick="setColors('#cc0100','#fe3725')">Red</button>
-  <button class="color-btn" style="background:#446775" onclick="setColors('#446775','#527c8e')">Slate Grey</button>
-  <button class="color-btn" style="background:#4b6a3c" onclick="setColors('#4b6a3c','#6a7a62')">Old Vine</button>
-  <button class="color-btn" style="background:#337d94" onclick="setColors('#337d94','#4b99b1')">Teal Blue</button>
-  <button class="color-btn" style="background:#19507f" onclick="setColors('#19507f','#296293')">Mid Blue</button>
-  <button class="color-btn" style="background:#3b4caa" onclick="setColors('#3b4caa','#5069e7')">Light Navy</button>
-  <button class="color-btn" style="background:#4a0d66" onclick="setColors('#4a0d66','#6e3d85')">Purple</button>
+  <button class="color-btn" style="background:#328833" onclick="setBothColors('#328833')">Green</button>
+  <button class="color-btn" style="background:#5b46c4" onclick="setBothColors('#5b46c4')">Violet</button>
+  <button class="color-btn" style="background:#c74200" onclick="setBothColors('#c74200')">Tawny Orange</button>
+  <button class="color-btn" style="background:#cc0100" onclick="setBothColors('#cc0100')">Red</button>
+  <button class="color-btn" style="background:#446775" onclick="setBothColors('#446775')">Slate Grey</button>
+  <button class="color-btn" style="background:#4b6a3c" onclick="setBothColors('#4b6a3c')">Old Vine</button>
+  <button class="color-btn" style="background:#337d94" onclick="setBothColors('#337d94')">Teal Blue</button>
+  <button class="color-btn" style="background:#19507f" onclick="setBothColors('#19507f')">Mid Blue</button>
+  <button class="color-btn" style="background:#3b4caa" onclick="setBothColors('#3b4caa')">Light Navy</button>
+  <button class="color-btn" style="background:#4a0d66" onclick="setBothColors('#4a0d66')">Purple</button>
 </div>
 
 <h2>Part 1: Define Variables</h2>
@@ -137,6 +137,12 @@
 <iframe id="preview"></iframe>
 
 <script>
+function setBothColors(color) {
+  document.getElementById("var1").value = color;
+  document.getElementById("var2").value = color;
+}
+
+// The original setColors function is left in case you want to keep it for other uses
 function setColors(primary, secondary) {
   document.getElementById("var1").value = primary;
   document.getElementById("var2").value = secondary;
