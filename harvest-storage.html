@@ -92,6 +92,24 @@
       margin-right: 0;
       padding: 8px 12px;
     }
+
+    .output-preview-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 30px;
+      align-items: start;
+    }
+    .output-preview-grid pre,
+    .output-preview-grid iframe {
+      min-height: 300px;
+      width: 100%;
+    }
+    @media (max-width: 900px) {
+      .output-preview-grid {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
   <!-- Highlight.js CSS and JS for syntax highlighting -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
@@ -167,12 +185,17 @@
   <button onclick="applyTemplate()">Generate HTML</button>
 </details><br><br>
   
-<h2>Part 3: HTML Output</h2>
-<button onclick="copyToClipboard()">📋 Copy HTML</button>
-<pre id="highlighted"><code class="language-html"></code></pre>
-
-<h2>Part 4: Live Preview</h2>
-<iframe id="preview"></iframe>
+<div class="output-preview-grid">
+  <div>
+    <h2>Part 3: HTML Output</h2>
+    <button onclick="copyToClipboard()">📋 Copy HTML</button>
+    <pre id="highlighted"><code class="language-html"></code></pre>
+  </div>
+  <div>
+    <h2>Part 4: Live Preview</h2>
+    <iframe id="preview"></iframe>
+  </div>
+</div>
 
 <script>
 function setColors(primary, secondary) {
