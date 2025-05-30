@@ -4,113 +4,129 @@
   <meta charset="UTF-8">
   <title>Template Engine - Final with Colors and Clean Harvest</title>
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f9f9f9;
-      color: #333;
-      padding: 20px;
-    }
-    h2 { margin-top: 30px; }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    .replace-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    input, textarea, select {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 6px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-family: monospace;
-    }
-    textarea {
-      resize: vertical;
-      min-height: 100px;
-    }
-    button {
-      padding: 10px 15px;
-      margin-top: 10px;
-      margin-right: 10px;
-      cursor: pointer;
-      font-weight: bold;
-      border: none;
-      background: #4CAF50;
-      color: white;
-      border-radius: 4px;
-    }
-    .color-themes {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    .color-btn {
-      border: none;
-      padding: 10px 14px;
-      color: #fff;
-      cursor: pointer;
-      font-weight: bold;
-      border-radius: 5px;
-    }
-    pre {
-      background: #eee;
-      padding: 15px;
-      border-radius: 5px;
-      overflow-x: auto;
-      font-family: Consolas, monospace;
-    }
-    iframe {
-      width: 100%;
-      height: 300px;
-      border: 1px solid #ccc;
-      background: white;
-    }
-    .template-controls {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    .template-controls input[type="text"] {
-      width: 150px;
-      font-family: inherit;
-    }
-    .template-controls select {
-      width: 180px;
-      font-family: inherit;
-    }
-    .template-controls button {
-      margin-top: 0;
-      margin-right: 0;
-      padding: 8px 12px;
-    }
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #f9f9f9;
+    color: #333;
+    padding: 20px;
+  }
+  h2 { margin-top: 30px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .replace-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  input, textarea, select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: monospace;
+  }
+  textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+  button {
+    padding: 10px 15px;
+    margin-top: 10px;
+    margin-right: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    border: none;
+    background: #4CAF50;
+    color: white;
+    border-radius: 4px;
+  }
+  .color-themes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .color-btn {
+    border: none;
+    padding: 10px 14px;
+    color: #fff;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 5px;
+  }
+  pre {
+    background: #eee;
+    padding: 15px;
+    border-radius: 5px;
+    overflow-x: auto;
+    font-family: Consolas, monospace;
+  }
+  iframe {
+    width: 100%;
+    height: 300px;
+    border: 1px solid #ccc;
+    background: white;
+  }
+  .template-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .template-controls input[type="text"] {
+    width: 150px;
+    font-family: inherit;
+  }
+  .template-controls select {
+    width: 180px;
+    font-family: inherit;
+  }
+  .template-controls button {
+    margin-top: 0;
+    margin-right: 0;
+    padding: 8px 12px;
+  }
 
+  /* --- OUTPUT & PREVIEW GRID --- */
+  .output-preview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+    margin-bottom: 30px;
+  }
+  .output-preview-grid > div {
+    min-width: 0; /* for overflow handling in grid children */
+  }
+  .output-preview-grid pre,
+  .output-preview-grid code {
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: auto;
+    white-space: pre-wrap;    /* Allows long lines to wrap */
+    word-break: break-all;    /* Breaks very long words/URLs */
+  }
+  .output-preview-grid pre {
+    max-height: 350px;
+    overflow-y: auto;
+  }
+  .output-preview-grid iframe {
+    min-height: 300px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  @media (max-width: 900px) {
     .output-preview-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-      margin-bottom: 30px;
-      align-items: start;
+      grid-template-columns: 1fr;
     }
-    .output-preview-grid pre,
-    .output-preview-grid iframe {
-      min-height: 300px;
-      width: 100%;
-    }
-    @media (max-width: 900px) {
-      .output-preview-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
+  }
+</style>
   <!-- Highlight.js CSS and JS for syntax highlighting -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
