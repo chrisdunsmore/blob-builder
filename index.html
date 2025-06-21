@@ -132,7 +132,7 @@
   </div>
 
   <h2>Part 2: Paste HTML Template</h2>
-  <textarea id="template" placeholder='e.g. <a href="var2" style="color:var1">var3</a>'></textarea>
+  <textarea id="template" placeholder='e.g. <a href="{var2}" style="color:{var1}">{var3}</a>'></textarea>
   <button onclick="applyTemplate()">Generate HTML</button>
 
   <h2>Part 3: HTML Output (Copyable + Syntax Highlighted)</h2>
@@ -178,11 +178,11 @@
       const vars = {};
       for (let i = 1; i <= 9; i++) {
         const raw = document.getElementById("var" + i).value;
-        vars["var" + i] = applyFindReplace(raw);
+        vars[`{var${i}}`] = applyFindReplace(raw);
       }
 
       Object.keys(vars).forEach(key => {
-        const regex = new RegExp(key, "g");
+        const regex = new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "g");
         template = template.replace(regex, vars[key]);
       });
 
