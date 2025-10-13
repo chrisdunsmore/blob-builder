@@ -141,13 +141,19 @@
     gap:8px;
     margin-top:10px;
   }
+  /* Make resort buttons clearly readable (black text) */
   .resort-btn {
     padding:8px 10px;
     border-radius:5px;
-    border:1px solid #bbb;
-    background:#f0f0f0;
+    border:1px solid #ddd;
+    background:#fff;
+    color:#000;              /* <-- explicit black text */
     cursor:pointer;
     font-weight:600;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.03);
+  }
+  .resort-btn:hover {
+    background:#f6f9ff;
   }
   .resort-btn.selected {
     outline:2px solid #4CAF50;
@@ -514,20 +520,32 @@ function renderResortButtons(resorts) {
     btn.type = 'button';
     btn.className = 'resort-btn';
     btn.textContent = r.name || ('Resort ' + (idx+1));
-    btn.dataset.promo = r.promoSlug || '';
-    btn.dataset.reservations = r.reservationsUrl || '';
-    btn.dataset.main = r.mainUrl || '';
-    btn.onclick = () => selectResort(btn);
+    // use explicit data-* attributes that match the input IDs
+    btn.setAttribute('data-promo-slug', r.promoSlug || '');
+    btn.setAttribute('data-reservations-url', r.reservationsUrl || '');
+    btn.setAttribute('data-main-url', r.mainUrl || '');
+    // use addEventListener and prevent default to be safe
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      selectResort(this);
+    });
     container.appendChild(btn);
   });
 }
 
 function selectResort(btn) {
+  // remove selected class from others
   document.querySelectorAll('.resort-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
-  document.getElementById('promo-slug').value = btn.dataset.promo || '';
-  document.getElementById('reservations-url').value = btn.dataset.reservations || '';
-  document.getElementById('main-url').value = btn.dataset.main || '';
+
+  // read explicit attributes
+  const promo = btn.getAttribute('data-promo-slug') || '';
+  const reservations = btn.getAttribute('data-reservations-url') || '';
+  const main = btn.getAttribute('data-main-url') || '';
+
+  document.getElementById('promo-slug').value = promo;
+  document.getElementById('reservations-url').value = reservations;
+  document.getElementById('main-url').value = main;
 }
 
 function clearResorts() {
