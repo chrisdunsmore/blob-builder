@@ -126,6 +126,34 @@
       grid-template-columns: 1fr;
     }
   }
+
+  /* Resorts area */
+  .resort-controls {
+    margin-bottom: 12px;
+    display:flex;
+    gap:8px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+  .resort-list {
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:10px;
+  }
+  .resort-btn {
+    padding:8px 10px;
+    border-radius:5px;
+    border:1px solid #bbb;
+    background:#f0f0f0;
+    cursor:pointer;
+    font-weight:600;
+  }
+  .resort-btn.selected {
+    outline:2px solid #4CAF50;
+    background:#e8fff0;
+  }
+
 </style>
   <!-- Highlight.js CSS and JS for syntax highlighting -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
@@ -164,6 +192,11 @@
     <div><label for="var-daycare">var-daycare</label><input id="var-daycare"></div>
     <div><label for="var-grooming">var-grooming</label><input id="var-grooming"></div>
     <div><label for="var-training">var-training</label><input id="var-training"></div>
+
+    <!-- New resort variables -->
+    <div><label for="promo-slug">promo-slug</label><input id="promo-slug" placeholder="e.g. happy-paws-2025"></div>
+    <div><label for="reservations-url">reservations-url</label><input id="reservations-url" placeholder="https://reserve.example.com/happypaws"></div>
+    <div><label for="main-url">main-url</label><input id="main-url" placeholder="https://happypaws.example.com"></div>
 </div>
 
 <details>
@@ -184,6 +217,22 @@
   <summary><h2 style="display:inline">Part 2A: Harvest Area</h2></summary>
   <textarea id="harvestArea" placeholder="Paste messy links here..."></textarea>
   <button onclick="harvestVariables()">🌾 Harvest URLs</button>
+</details><br><br>
+
+<!-- New: Resorts CSV loader and quick select -->
+<details>
+  <summary><h2 style="display:inline">Pet Resorts Quick Select (Load CSV)</h2></summary>
+  <p style="margin-top:10px">Paste CSV with columns: ResortName,promo-slug,main-url,reservations Url (header optional). Example:</p>
+  <pre style="background:#fafafa;padding:8px;border-radius:4px">ResortName,promo-slug,main-url,reservations Url
+Happy Paws,happy-paws-2025,https://happypaws.example.com,https://reserve.example.com/happypaws
+"Cozy Canines","cozy-canines-2025","https://cozycanines.example.com","https://reserve.example.com/cozy"</pre>
+  <textarea id="resortCsv" placeholder="Paste CSV here (one resort per line)."></textarea>
+  <div class="resort-controls">
+    <button onclick="loadResortsFromTextarea()">Load Resorts</button>
+    <button onclick="clearResorts()">Clear Resorts</button>
+    <label style="font-weight:600;margin-left:8px;">Or use stored resorts</label>
+  </div>
+  <div id="resort-list" class="resort-list"></div>
 </details><br><br>
 
 <details>
@@ -261,7 +310,7 @@ function applyFindReplace(str) {
 
 function applyTemplate() {
   let template = document.getElementById("template").value;
-  const ids = ["var1","var2","var3","var4","var5","var6","var7","var8","var-boarding","var-daycare","var-grooming","var-training"];
+  const ids = ["var1","var2","var3","var4","var5","var6","var7","var8","var-boarding","var-daycare","var-grooming","var-training","promo-slug","reservations-url","main-url"];
   ids.forEach(id => {
     const value = applyFindReplace(document.getElementById(id).value);
     template = template.replaceAll("{" + id + "}", value);
@@ -345,6 +394,148 @@ function updateTemplateList() {
   if (templates[currentValue]) select.value = currentValue;
 }
 
+// --- CSV parsing and resorts quick-select (header-aware) ---
+
+function simpleCsvParse(text) {
+  // RFC-style friendly parser: handles quoted fields and escaped quotes ("")
+  const rows = [];
+  let i = 0;
+  let cur = '';
+  let row = [];
+  let inQuotes = false;
+  while (i < text.length) {
+    const ch = text[i];
+    if (ch === '"') {
+      // escaped quote?
+      if (inQuotes && text[i+1] === '"') {
+        cur += '"';
+        i += 2;
+        continue;
+      }
+      inQuotes = !inQuotes;
+      i++;
+      continue;
+    }
+    if (ch === ',' && !inQuotes) {
+      row.push(cur);
+      cur = '';
+      i++;
+      continue;
+    }
+    if ((ch === '\n' || ch === '\r') && !inQuotes) {
+      // handle CRLF
+      if (ch === '\r' && text[i+1] === '\n') i++;
+      row.push(cur);
+      rows.push(row.map(s => s.trim()));
+      row = [];
+      cur = '';
+      i++;
+      continue;
+    }
+    cur += ch;
+    i++;
+  }
+  // final
+  if (cur !== '' || row.length) {
+    row.push(cur);
+    rows.push(row.map(s => s.trim()));
+  }
+  // remove empty rows
+  return rows.filter(r => r.length > 1 || (r.length === 1 && r[0] !== ''));
+}
+
+function normalizeHeaderKey(str) {
+  return (str || '').trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '');
+}
+
+function loadResortsFromTextarea() {
+  const text = document.getElementById('resortCsv').value.trim();
+  if (!text) return alert('Please paste CSV text for resorts.');
+  const rows = simpleCsvParse(text);
+  if (!rows.length) return alert('No CSV rows found.');
+
+  // detect header (case/space-insensitive). Accept headers like:
+  // "ResortName", "promo-slug", "main-url", "reservations Url"
+  const first = rows[0];
+  let hasHeader = false;
+  if (first.length >= 4) {
+    // if first row contains known header tokens, treat as header
+    const joined = first.join(',').toLowerCase();
+    const headerLike = ['resort', 'resortname', 'promo', 'promo-slug', 'main', 'main-url', 'reservation', 'reservations', 'reservations-url'].some(h => joined.includes(h));
+    if (headerLike) hasHeader = true;
+  }
+
+  let mapping = { nameIdx: 0, promoIdx: 1, mainIdx: 2, reservationsIdx: 3 }; // default order fallback
+  if (hasHeader) {
+    const hdr = first.map(h => normalizeHeaderKey(h));
+    const found = {};
+    hdr.forEach((h, idx) => {
+      if (!h) return;
+      if (h.includes('resort') || h.includes('name')) found.nameIdx = idx;
+      else if (h.includes('promo')) found.promoIdx = idx;
+      else if (h.includes('main')) found.mainIdx = idx;
+      else if (h.includes('reserv')) found.reservationsIdx = idx;
+    });
+    // override mapping only for indices we discovered
+    mapping.nameIdx = (found.nameIdx !== undefined) ? found.nameIdx : mapping.nameIdx;
+    mapping.promoIdx = (found.promoIdx !== undefined) ? found.promoIdx : mapping.promoIdx;
+    mapping.mainIdx = (found.mainIdx !== undefined) ? found.mainIdx : mapping.mainIdx;
+    mapping.reservationsIdx = (found.reservationsIdx !== undefined) ? found.reservationsIdx : mapping.reservationsIdx;
+  } else {
+    // If no header detected, assume the order you described:
+    // ResortName, promo-slug, main-url, reservations Url
+    mapping = { nameIdx: 0, promoIdx: 1, mainIdx: 2, reservationsIdx: 3 };
+  }
+
+  const startRow = hasHeader ? 1 : 0;
+  const resorts = [];
+  for (let i = startRow; i < rows.length; i++) {
+    const r = rows[i];
+    // defensively read columns (some rows may be shorter)
+    const name = (r[mapping.nameIdx] || '').trim();
+    const promoSlug = (r[mapping.promoIdx] || '').trim();
+    const mainUrl = (r[mapping.mainIdx] || '').trim();
+    const reservationsUrl = (r[mapping.reservationsIdx] || '').trim();
+    if (!name && !promoSlug && !mainUrl && !reservationsUrl) continue;
+    resorts.push({ name, promoSlug, reservationsUrl, mainUrl });
+  }
+
+  if (!resorts.length) return alert('No valid resort rows found. Ensure CSV has ResortName,promo-slug,main-url,reservations Url per line (header optional).');
+  localStorage.setItem('resortsList', JSON.stringify(resorts));
+  renderResortButtons(resorts);
+  alert('Resorts loaded: ' + resorts.length);
+}
+
+function renderResortButtons(resorts) {
+  const container = document.getElementById('resort-list');
+  container.innerHTML = '';
+  resorts.forEach((r, idx) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'resort-btn';
+    btn.textContent = r.name || ('Resort ' + (idx+1));
+    btn.dataset.promo = r.promoSlug || '';
+    btn.dataset.reservations = r.reservationsUrl || '';
+    btn.dataset.main = r.mainUrl || '';
+    btn.onclick = () => selectResort(btn);
+    container.appendChild(btn);
+  });
+}
+
+function selectResort(btn) {
+  document.querySelectorAll('.resort-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('promo-slug').value = btn.dataset.promo || '';
+  document.getElementById('reservations-url').value = btn.dataset.reservations || '';
+  document.getElementById('main-url').value = btn.dataset.main || '';
+}
+
+function clearResorts() {
+  localStorage.removeItem('resortsList');
+  document.getElementById('resort-list').innerHTML = '';
+  alert('Resorts cleared.');
+}
+
 window.addEventListener('DOMContentLoaded', function() {
   // Load the last used unnamed template (for backward compatibility)
   const last = localStorage.getItem('myTemplate');
@@ -354,6 +545,17 @@ window.addEventListener('DOMContentLoaded', function() {
     setTemplates(templates);
   }
   updateTemplateList();
+
+  // load any stored resorts
+  const stored = localStorage.getItem('resortsList');
+  if (stored) {
+    try {
+      const resorts = JSON.parse(stored);
+      renderResortButtons(resorts);
+    } catch (e) {
+      console.warn('Invalid stored resorts:', e);
+    }
+  }
 });
 </script>
 
