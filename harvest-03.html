@@ -227,7 +227,7 @@
 <!-- New: Resorts CSV/TSV loader and quick select -->
 <details>
   <summary><h2 style="display:inline">Pet Resorts Quick Select (Load CSV/TSV)</h2></summary>
-  <p style="margin-top:10px">Paste CSV or TSV with flexible headers. Example TSV your provided:</p>
+  <p style="margin-top:10px">Paste CSV or TSV with flexible headers. Example TSV you provided:</p>
   <pre style="background:#fafafa;padding:8px;border-radius:4px">ResortName	LandingPageSlugValue	Color	var1	var2	Main URL	RES LINK
 4 Paws Pet Resort	4-paws-pet-resort	Green	#328833	#65b766	https://www.4pawspetresort.com	https://www.4pawspetresort.com/reservation/
 Advantage Pet Center	advantage-pet-center	Violet	#5b46c4	#745af5	https://www.advantagepetcenter.com	https://www.advantagepetcenter.com/reservation/</pre>
@@ -348,17 +348,29 @@ function applyFindReplace(str) {
 
 function applyTemplate() {
   let template = document.getElementById("template").value;
-  const ids = ["var1","var2","var3","var4","var5","var6","var7","var8","var-boarding","var-daycare","var-grooming","var-training","promo-slug","reservations-url","main-url"];
-  // also expose label for template replacement
-  const label = document.getElementById('last-selected-label') ? document.getElementById('last-selected-label').value : '';
-  ids.forEach(id => {
-    const value = applyFindReplace(document.getElementById(id).value);
-    template = template.replaceAll("{" + id + "}", value);
+
+  // Gather all inputs/textarea/select elements that have an id and build a variables map
+  const vars = {};
+  document.querySelectorAll('input[id], textarea[id], select[id]').forEach(el => {
+    // skip empty hidden helper if any
+    vars[el.id] = applyFindReplace(el.value || '');
   });
-  template = template.replaceAll("{label}", label);
+
+  // also include last-selected structured values if present (hidden inputs will already be included)
+  // replace placeholders
+  Object.keys(vars).forEach(key => {
+    template = template.replaceAll("{" + key + "}", vars[key] || '');
+  });
+
+  // also support {label} (last selected label stored in hidden input)
+  const lastLabel = (document.getElementById('last-selected-label') || {}).value || '';
+  template = template.replaceAll("{label}", lastLabel);
+
   // Set as textContent for safe HTML display in code block
   document.getElementById("highlighted").querySelector("code").textContent = template;
+  // Highlight.js colorizes it
   hljs.highlightElement(document.getElementById("highlighted").querySelector("code"));
+  // Live preview
   document.getElementById("preview").srcdoc = template;
 }
 
@@ -373,14 +385,17 @@ function copyToClipboard() {
   alert('HTML copied!');
 }
 
-// --- Template save/load ---
+// --- Template Save/Load/Delete Logic ---
+
 function getTemplates() {
   let templates = localStorage.getItem("myTemplates");
   return templates ? JSON.parse(templates) : {};
 }
+
 function setTemplates(templates) {
   localStorage.setItem("myTemplates", JSON.stringify(templates));
 }
+
 function saveTemplate() {
   const name = document.getElementById("templateName").value.trim();
   if (!name) return alert("Please enter a template name.");
@@ -391,6 +406,7 @@ function saveTemplate() {
   alert("Template saved!");
   updateTemplateList();
 }
+
 function loadTemplate() {
   const list = document.getElementById("templateList");
   const name = list.value;
@@ -398,6 +414,7 @@ function loadTemplate() {
   const templates = getTemplates();
   document.getElementById("template").value = templates[name] || "";
 }
+
 function deleteTemplate() {
   const list = document.getElementById("templateList");
   const name = list.value;
@@ -413,6 +430,7 @@ function deleteTemplate() {
     }
   }
 }
+
 function updateTemplateList() {
   const select = document.getElementById("templateList");
   const templates = getTemplates();
@@ -427,7 +445,7 @@ function updateTemplateList() {
   if (templates[currentValue]) select.value = currentValue;
 }
 
-// --- CSV/TSV parsing and resorts quick-select (improved header mapping) ---
+// --- CSV/TSV parsing and resorts quick-select (improved header mapping, img-url support) ---
 function simpleCsvParse(text) {
   const rows = [];
   let i = 0;
@@ -479,7 +497,7 @@ function loadResortsFromTextarea() {
   let text = document.getElementById('resortCsv').value;
   if (!text || !text.trim()) return alert('Please paste CSV/TSV text for resorts.');
 
-  // Auto-detect TSV: if tabs present and few commas, replace tabs with commas.
+  // Auto-detect TSV: if tabs present and more tabs than commas, replace tabs with commas.
   if (text.includes('\t') && ( (text.match(/,/g)||[]).length < (text.match(/\t/g)||[]).length )) {
     text = text.replace(/\t/g, ',');
   }
@@ -492,13 +510,13 @@ function loadResortsFromTextarea() {
   let hasHeader = false;
   if (first.length >= 3) {
     const joined = first.join(',').toLowerCase();
-    const headerLike = ['resort', 'resortname', 'promo', 'promo-slug', 'landing', 'slug', 'main', 'reserv', 'res-link', 'var1', 'var2', 'color', 'primary', 'secondary'].some(h => joined.includes(h));
+    const headerLike = ['resort', 'resortname', 'promo', 'promo-slug', 'landing', 'slug', 'main', 'reserv', 'res-link', 'var1', 'var2', 'color', 'primary', 'secondary', 'img', 'image', 'img-url'].some(h => joined.includes(h));
     if (headerLike) hasHeader = true;
   }
 
   // default fallback order if no header:
-  // 0 ResortName,1 promo-slug,2 main-url,3 reservations-url,4 color1,5 color2,6 color3
-  let mapping = { nameIdx: 0, promoIdx: 1, mainIdx: 2, reservationsIdx: 3, colorNameIdx: -1, color1Idx: 4, color2Idx: 5, color3Idx: 6 };
+  // 0 ResortName,1 promo-slug,2 main-url,3 reservations-url,4 color1,5 color2,6 color3,7 img-url-1,8 img-url-2
+  let mapping = { nameIdx: 0, promoIdx: 1, mainIdx: 2, reservationsIdx: 3, colorNameIdx: -1, color1Idx: 4, color2Idx: 5, color3Idx: 6, img1Idx: 7, img2Idx: 8 };
   if (hasHeader) {
     const hdr = first.map(h => normalizeHeaderKey(h));
     const found = {};
@@ -512,12 +530,13 @@ function loadResortsFromTextarea() {
       else if (h.includes('var2') || h.includes('var-2') || h.includes('secondary') || h.includes('color2')) found.color2Idx = idx;
       else if (h === 'color' || h.includes('color-name') || h.includes('colorname')) found.colorNameIdx = idx;
       else if (h.includes('accent') || h.includes('color3')) found.color3Idx = idx;
+      else if (h.includes('img-url-1') || (h.includes('img') && h.includes('1')) || h.includes('image-1')) found.img1Idx = idx;
+      else if (h.includes('img-url-2') || (h.includes('img') && h.includes('2')) || h.includes('image-2')) found.img2Idx = idx;
       else if (h.includes('url')) {
         // generic url -> prefer main if main not set, otherwise reservations
         if (found.mainIdx === undefined) found.mainIdx = idx;
         else if (found.reservationsIdx === undefined) found.reservationsIdx = idx;
       }
-      // also catch landing-page-slug-value, landingpage...
       if (h.includes('landingpage') || h.includes('landing-page') || h.includes('landingpageslug') || h.includes('landing-page-slug') || h.includes('landingpageslugvalue')) {
         found.promoIdx = idx;
       }
@@ -532,13 +551,15 @@ function loadResortsFromTextarea() {
     mapping.color1Idx = (found.color1Idx !== undefined) ? found.color1Idx : mapping.color1Idx;
     mapping.color2Idx = (found.color2Idx !== undefined) ? found.color2Idx : mapping.color2Idx;
     mapping.color3Idx = (found.color3Idx !== undefined) ? found.color3Idx : mapping.color3Idx;
+    mapping.img1Idx = (found.img1Idx !== undefined) ? found.img1Idx : mapping.img1Idx;
+    mapping.img2Idx = (found.img2Idx !== undefined) ? found.img2Idx : mapping.img2Idx;
   }
 
   const startRow = hasHeader ? 1 : 0;
   const resorts = [];
   for (let i = startRow; i < rows.length; i++) {
     const rawRow = rows[i];
-    // Use the very first raw field as the label (as you requested)
+    // Use the very first raw field as the label (as requested)
     const labelRaw = (rawRow[0] || '').trim();
 
     const name = (rawRow[mapping.nameIdx] || '').trim();
@@ -549,15 +570,18 @@ function loadResortsFromTextarea() {
     const color1 = (rawRow[mapping.color1Idx] || '').trim();
     const color2 = (rawRow[mapping.color2Idx] || '').trim();
     const color3 = (rawRow[mapping.color3Idx] || '').trim();
+    const img1 = (rawRow[mapping.img1Idx] || '').trim();
+    const img2 = (rawRow[mapping.img2Idx] || '').trim();
 
     // If everything empty, skip
     if (!labelRaw && !name && !promoSlug && !mainUrl && !reservationsUrl) continue;
 
-    // Build consistent object: label is raw first field (user request)
     resorts.push({
       label: labelRaw || name || ('Resort ' + (i+1)),
       name, promoSlug, mainUrl, reservationsUrl,
-      colorName, color1, color2, color3
+      colorName, color1, color2, color3,
+      'img-url-1': img1,
+      'img-url-2': img2
     });
   }
 
@@ -576,6 +600,7 @@ function renderResortButtons(resorts) {
     btn.className = 'resort-btn';
     btn.textContent = r.label || ('Resort ' + (idx+1));
 
+    // Attach all known attributes as data-*
     btn.setAttribute('data-promo-slug', r.promoSlug || '');
     btn.setAttribute('data-reservations-url', r.reservationsUrl || '');
     btn.setAttribute('data-main-url', r.mainUrl || '');
@@ -583,6 +608,9 @@ function renderResortButtons(resorts) {
     btn.setAttribute('data-color1', r.color1 || '');
     btn.setAttribute('data-color2', r.color2 || '');
     btn.setAttribute('data-color3', r.color3 || '');
+    // add img-url fields (new)
+    btn.setAttribute('data-img-url-1', r['img-url-1'] || '');
+    btn.setAttribute('data-img-url-2', r['img-url-2'] || '');
 
     // Style with primary color if available; otherwise default
     const primary = (r.color1 || '').trim();
@@ -618,8 +646,10 @@ function selectResort(btn) {
   const colorName = btn.getAttribute('data-color-name') || '';
   const color1 = btn.getAttribute('data-color1') || '';
   const color2 = btn.getAttribute('data-color2') || '';
+  const img1 = btn.getAttribute('data-img-url-1') || '';
+  const img2 = btn.getAttribute('data-img-url-2') || '';
 
-  // Populate fields correctly
+  // Populate visible fields
   document.getElementById('promo-slug').value = promo;
   document.getElementById('reservations-url').value = reservations;
   document.getElementById('main-url').value = main;
@@ -643,6 +673,23 @@ function selectResort(btn) {
   if (color2) {
     document.getElementById('var2').value = color2;
     updateColor(document.getElementById('var2'));
+  }
+
+  // Create or update hidden inputs for any additional columns (including img-url-1/img-url-2)
+  // Iterate through all data-* attributes of the clicked button and mirror them to hidden inputs
+  for (let i = 0; i < btn.attributes.length; i++) {
+    const attr = btn.attributes[i];
+    if (!attr.name.startsWith('data-')) continue;
+    const key = attr.name.slice(5); // remove "data-"
+    // create or find input with id equal to the key
+    let input = document.getElementById(key);
+    if (!input) {
+      input = document.createElement('input');
+      input.type = 'hidden';
+      input.id = key;
+      document.body.appendChild(input);
+    }
+    input.value = attr.value || '';
   }
 }
 
