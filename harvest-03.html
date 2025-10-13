@@ -227,11 +227,10 @@
 <!-- New: Resorts CSV/TSV loader and quick select -->
 <details>
   <summary><h2 style="display:inline">Pet Resorts Quick Select (Load CSV/TSV)</h2></summary>
-  <p style="margin-top:10px">Paste CSV or TSV with columns: ResortName,promo-slug,main-url,reservations Url,primary-color,secondary-color,accent-color (header optional). Example rows:</p>
-  <pre style="background:#fafafa;padding:8px;border-radius:4px">ResortName,promo-slug,main-url,reservations Url,primary-color,secondary-color,accent-color
-Advantage Pet Center	advantage-pet-center	https://www.advantagepetcenter.com	https://www.advantagepetcenter.com/reservation/	#1F77B4	#FF7F0E	#2CA02C
-Happy Paws,happy-paws-2025,https://happypaws.example.com,https://reserve.example.com/happypaws,#328833,#65b766,#ffd700
-"Cozy Canines","cozy-canines-2025","https://cozycanines.example.com","https://reserve.example.com/cozy","#4a0d66","#6e3d85","#e74c3c"</pre>
+  <p style="margin-top:10px">Paste CSV or TSV with flexible headers. Example TSV your provided:</p>
+  <pre style="background:#fafafa;padding:8px;border-radius:4px">ResortName	LandingPageSlugValue	Color	var1	var2	Main URL	RES LINK
+4 Paws Pet Resort	4-paws-pet-resort	Green	#328833	#65b766	https://www.4pawspetresort.com	https://www.4pawspetresort.com/reservation/
+Advantage Pet Center	advantage-pet-center	Violet	#5b46c4	#745af5	https://www.advantagepetcenter.com	https://www.advantagepetcenter.com/reservation/</pre>
   <textarea id="resortCsv" placeholder="Paste CSV/TSV here (one resort per line)."></textarea>
   <div class="resort-controls">
     <button onclick="loadResortsFromTextarea()">Load Resorts</button>
@@ -252,7 +251,7 @@ Happy Paws,happy-paws-2025,https://happypaws.example.com,https://reserve.example
     <button onclick="loadTemplate()">Load</button>
     <button onclick="deleteTemplate()">Delete</button>
   </div>
-  <textarea id="template" placeholder='Example: <a href="{reservations-url}" style="color:{promo-slug}">{main-url}</a>'></textarea>
+  <textarea id="template" placeholder='Example: <a href="{reservations-url}" style="color:{var1}">{label}</a>'></textarea>
   <button onclick="applyTemplate()">Generate HTML</button>
 </details><br><br>
   
@@ -279,10 +278,8 @@ function setColors(primary, secondary) {
 function updateColor(input) {
   const val = input.value.trim();
   if (/^#[0-9a-f]{6}$/i.test(val) || /^[a-z]+$/i.test(val)) {
-    // For hex codes and simple color names, attempt to set background.
     try {
       input.style.backgroundColor = val;
-      // choose contrast color
       const contrast = getContrastColor(val);
       input.style.color = contrast;
     } catch (e) {
@@ -295,8 +292,6 @@ function updateColor(input) {
   }
 }
 
-// small helpers to determine contrast for a hex color. Returns '#fff' or '#000'.
-// If string isn't hex, fall back to black.
 function hexToRgb(hex) {
   if (!hex) return null;
   hex = hex.replace('#','').trim();
@@ -313,7 +308,6 @@ function luminance(r,g,b) {
   return 0.2126*a[0] + 0.7152*a[1] + 0.0722*a[2];
 }
 function getContrastColor(colorStr) {
-  // colorStr like "#rrggbb" -> compute luminance
   if (!colorStr) return '#000';
   const m = colorStr.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
   if (m) {
@@ -322,7 +316,6 @@ function getContrastColor(colorStr) {
     const L = luminance(rgb.r, rgb.g, rgb.b);
     return L > 0.6 ? '#000' : '#fff';
   }
-  // Unknown named color: fallback black
   return '#000';
 }
 
@@ -356,15 +349,16 @@ function applyFindReplace(str) {
 function applyTemplate() {
   let template = document.getElementById("template").value;
   const ids = ["var1","var2","var3","var4","var5","var6","var7","var8","var-boarding","var-daycare","var-grooming","var-training","promo-slug","reservations-url","main-url"];
+  // also expose label for template replacement
+  const label = document.getElementById('last-selected-label') ? document.getElementById('last-selected-label').value : '';
   ids.forEach(id => {
     const value = applyFindReplace(document.getElementById(id).value);
     template = template.replaceAll("{" + id + "}", value);
   });
+  template = template.replaceAll("{label}", label);
   // Set as textContent for safe HTML display in code block
   document.getElementById("highlighted").querySelector("code").textContent = template;
-  // Highlight.js colorizes it
   hljs.highlightElement(document.getElementById("highlighted").querySelector("code"));
-  // Live preview
   document.getElementById("preview").srcdoc = template;
 }
 
@@ -379,17 +373,14 @@ function copyToClipboard() {
   alert('HTML copied!');
 }
 
-// --- Template Save/Load/Delete Logic ---
-
+// --- Template save/load ---
 function getTemplates() {
   let templates = localStorage.getItem("myTemplates");
   return templates ? JSON.parse(templates) : {};
 }
-
 function setTemplates(templates) {
   localStorage.setItem("myTemplates", JSON.stringify(templates));
 }
-
 function saveTemplate() {
   const name = document.getElementById("templateName").value.trim();
   if (!name) return alert("Please enter a template name.");
@@ -400,7 +391,6 @@ function saveTemplate() {
   alert("Template saved!");
   updateTemplateList();
 }
-
 function loadTemplate() {
   const list = document.getElementById("templateList");
   const name = list.value;
@@ -408,7 +398,6 @@ function loadTemplate() {
   const templates = getTemplates();
   document.getElementById("template").value = templates[name] || "";
 }
-
 function deleteTemplate() {
   const list = document.getElementById("templateList");
   const name = list.value;
@@ -424,7 +413,6 @@ function deleteTemplate() {
     }
   }
 }
-
 function updateTemplateList() {
   const select = document.getElementById("templateList");
   const templates = getTemplates();
@@ -439,10 +427,8 @@ function updateTemplateList() {
   if (templates[currentValue]) select.value = currentValue;
 }
 
-// --- CSV/TSV parsing and resorts quick-select (header-aware & tab-normalizing, supports colors) ---
-
+// --- CSV/TSV parsing and resorts quick-select (improved header mapping) ---
 function simpleCsvParse(text) {
-  // RFC-style friendly parser: handles quoted fields and escaped quotes ("")
   const rows = [];
   let i = 0;
   let cur = '';
@@ -451,7 +437,6 @@ function simpleCsvParse(text) {
   while (i < text.length) {
     const ch = text[i];
     if (ch === '"') {
-      // escaped quote?
       if (inQuotes && text[i+1] === '"') {
         cur += '"';
         i += 2;
@@ -468,7 +453,6 @@ function simpleCsvParse(text) {
       continue;
     }
     if ((ch === '\n' || ch === '\r') && !inQuotes) {
-      // handle CRLF
       if (ch === '\r' && text[i+1] === '\n') i++;
       row.push(cur);
       rows.push(row.map(s => s.trim()));
@@ -480,12 +464,10 @@ function simpleCsvParse(text) {
     cur += ch;
     i++;
   }
-  // final
   if (cur !== '' || row.length) {
     row.push(cur);
     rows.push(row.map(s => s.trim()));
   }
-  // remove empty rows
   return rows.filter(r => r.length > 0 && !(r.length === 1 && r[0] === ''));
 }
 
@@ -497,75 +479,89 @@ function loadResortsFromTextarea() {
   let text = document.getElementById('resortCsv').value;
   if (!text || !text.trim()) return alert('Please paste CSV/TSV text for resorts.');
 
-  // If the paste looks like tab-separated (TSV) and there are no commas, convert tabs to commas.
-  if (text.includes('\t') && !text.includes(',')) {
+  // Auto-detect TSV: if tabs present and few commas, replace tabs with commas.
+  if (text.includes('\t') && ( (text.match(/,/g)||[]).length < (text.match(/\t/g)||[]).length )) {
     text = text.replace(/\t/g, ',');
   }
 
-  // Trim leading/trailing whitespace and remove any stray BOM
   text = text.trim().replace(/^\uFEFF/, '');
-
   const rows = simpleCsvParse(text);
   if (!rows.length) return alert('No CSV rows found.');
 
-  // detect header (case/space-insensitive). Accept headers like:
-  // "ResortName", "promo-slug", "main-url", "reservations Url", "primary-color", "secondary-color"
   const first = rows[0];
   let hasHeader = false;
-  if (first.length >= 4) {
+  if (first.length >= 3) {
     const joined = first.join(',').toLowerCase();
-    const headerLike = ['resort', 'resortname', 'promo', 'promo-slug', 'main', 'main-url', 'reservation', 'reservations', 'reservations-url', 'color', 'primary', 'secondary', 'accent'].some(h => joined.includes(h));
+    const headerLike = ['resort', 'resortname', 'promo', 'promo-slug', 'landing', 'slug', 'main', 'reserv', 'res-link', 'var1', 'var2', 'color', 'primary', 'secondary'].some(h => joined.includes(h));
     if (headerLike) hasHeader = true;
   }
 
-  // default fallback order if no header: ResortName, promo-slug, main-url, reservations Url, primary-color, secondary-color, accent-color
-  let mapping = { nameIdx: 0, promoIdx: 1, mainIdx: 2, reservationsIdx: 3, color1Idx: 4, color2Idx: 5, color3Idx: 6 };
+  // default fallback order if no header:
+  // 0 ResortName,1 promo-slug,2 main-url,3 reservations-url,4 color1,5 color2,6 color3
+  let mapping = { nameIdx: 0, promoIdx: 1, mainIdx: 2, reservationsIdx: 3, colorNameIdx: -1, color1Idx: 4, color2Idx: 5, color3Idx: 6 };
   if (hasHeader) {
     const hdr = first.map(h => normalizeHeaderKey(h));
     const found = {};
     hdr.forEach((h, idx) => {
       if (!h) return;
       if (h.includes('resort') || h.includes('name')) found.nameIdx = idx;
-      else if (h.includes('promo')) found.promoIdx = idx;
-      else if (h.includes('main')) found.mainIdx = idx;
-      else if (h.includes('reserv')) found.reservationsIdx = idx;
-      else if (h.includes('primary') || h.includes('color1') || h === 'color') found.color1Idx = idx;
-      else if (h.includes('secondary') || h.includes('color2')) found.color2Idx = idx;
+      else if (h.includes('slug') || h.includes('landing')) found.promoIdx = idx;
+      else if (h.includes('reserv') || h.includes('res-link') || h.includes('reslink')) found.reservationsIdx = idx;
+      else if ((h.includes('main') && h.includes('url')) || h === 'main' || (h.includes('main') && h.includes('link'))) found.mainIdx = idx;
+      else if (h.includes('var1') || h.includes('var-1') || h.includes('primary') || h.includes('color1')) found.color1Idx = idx;
+      else if (h.includes('var2') || h.includes('var-2') || h.includes('secondary') || h.includes('color2')) found.color2Idx = idx;
+      else if (h === 'color' || h.includes('color-name') || h.includes('colorname')) found.colorNameIdx = idx;
       else if (h.includes('accent') || h.includes('color3')) found.color3Idx = idx;
+      else if (h.includes('url')) {
+        // generic url -> prefer main if main not set, otherwise reservations
+        if (found.mainIdx === undefined) found.mainIdx = idx;
+        else if (found.reservationsIdx === undefined) found.reservationsIdx = idx;
+      }
+      // also catch landing-page-slug-value, landingpage...
+      if (h.includes('landingpage') || h.includes('landing-page') || h.includes('landingpageslug') || h.includes('landing-page-slug') || h.includes('landingpageslugvalue')) {
+        found.promoIdx = idx;
+      }
+      if (h.includes('slug') && found.promoIdx === undefined) found.promoIdx = idx;
     });
+
     mapping.nameIdx = (found.nameIdx !== undefined) ? found.nameIdx : mapping.nameIdx;
     mapping.promoIdx = (found.promoIdx !== undefined) ? found.promoIdx : mapping.promoIdx;
     mapping.mainIdx = (found.mainIdx !== undefined) ? found.mainIdx : mapping.mainIdx;
     mapping.reservationsIdx = (found.reservationsIdx !== undefined) ? found.reservationsIdx : mapping.reservationsIdx;
+    mapping.colorNameIdx = (found.colorNameIdx !== undefined) ? found.colorNameIdx : mapping.colorNameIdx;
     mapping.color1Idx = (found.color1Idx !== undefined) ? found.color1Idx : mapping.color1Idx;
     mapping.color2Idx = (found.color2Idx !== undefined) ? found.color2Idx : mapping.color2Idx;
     mapping.color3Idx = (found.color3Idx !== undefined) ? found.color3Idx : mapping.color3Idx;
-  } else {
-    mapping = { nameIdx: 0, promoIdx: 1, mainIdx: 2, reservationsIdx: 3, color1Idx: 4, color2Idx: 5, color3Idx: 6 };
   }
 
   const startRow = hasHeader ? 1 : 0;
   const resorts = [];
   for (let i = startRow; i < rows.length; i++) {
     const rawRow = rows[i];
-    // raw first field (always use this as the button label per your request)
-    const rawFirst = (rawRow[0] || '').trim();
+    // Use the very first raw field as the label (as you requested)
+    const labelRaw = (rawRow[0] || '').trim();
+
     const name = (rawRow[mapping.nameIdx] || '').trim();
     const promoSlug = (rawRow[mapping.promoIdx] || '').trim();
     const mainUrl = (rawRow[mapping.mainIdx] || '').trim();
     const reservationsUrl = (rawRow[mapping.reservationsIdx] || '').trim();
+    const colorName = (mapping.colorNameIdx >= 0 ? (rawRow[mapping.colorNameIdx] || '').trim() : '');
     const color1 = (rawRow[mapping.color1Idx] || '').trim();
     const color2 = (rawRow[mapping.color2Idx] || '').trim();
     const color3 = (rawRow[mapping.color3Idx] || '').trim();
-    if (!rawFirst && !promoSlug && !mainUrl && !reservationsUrl) continue;
+
+    // If everything empty, skip
+    if (!labelRaw && !name && !promoSlug && !mainUrl && !reservationsUrl) continue;
+
+    // Build consistent object: label is raw first field (user request)
     resorts.push({
-      label: rawFirst || name || ('Resort ' + (i+1)),
-      name, promoSlug, reservationsUrl, mainUrl,
-      color1, color2, color3
+      label: labelRaw || name || ('Resort ' + (i+1)),
+      name, promoSlug, mainUrl, reservationsUrl,
+      colorName, color1, color2, color3
     });
   }
 
-  if (!resorts.length) return alert('No valid resort rows found. Ensure CSV/TSV has ResortName,promo-slug,main-url,reservations Url per line (header optional).');
+  if (!resorts.length) return alert('No valid resort rows found. Ensure CSV/TSV has rows.');
   localStorage.setItem('resortsList', JSON.stringify(resorts));
   renderResortButtons(resorts);
   alert('Resorts loaded: ' + resorts.length);
@@ -578,33 +574,32 @@ function renderResortButtons(resorts) {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'resort-btn';
-    btn.textContent = r.label || ('Resort ' + (idx+1)); // label uses the first field (raw)
-    // explicit data-* attributes
+    btn.textContent = r.label || ('Resort ' + (idx+1));
+
     btn.setAttribute('data-promo-slug', r.promoSlug || '');
     btn.setAttribute('data-reservations-url', r.reservationsUrl || '');
     btn.setAttribute('data-main-url', r.mainUrl || '');
+    btn.setAttribute('data-color-name', r.colorName || '');
     btn.setAttribute('data-color1', r.color1 || '');
     btn.setAttribute('data-color2', r.color2 || '');
     btn.setAttribute('data-color3', r.color3 || '');
 
-    // style the button with primary color (if provided)
+    // Style with primary color if available; otherwise default
     const primary = (r.color1 || '').trim();
-    const secondary = (r.color2 || '').trim();
     if (primary) {
       try {
         btn.style.backgroundColor = primary;
         btn.style.color = getContrastColor(primary);
         btn.style.borderColor = primary;
       } catch (e) {
-        // ignore styling errors for invalid color strings
+        btn.style.backgroundColor = '#fff';
+        btn.style.color = '#000';
       }
     } else {
-      // keep default readable style
       btn.style.backgroundColor = '#fff';
       btn.style.color = '#000';
     }
 
-    // click behavior: set promo/main/reservations and set var1/var2 from colors (primary/secondary)
     btn.addEventListener('click', function(e) {
       e.preventDefault();
       selectResort(this);
@@ -620,14 +615,27 @@ function selectResort(btn) {
   const promo = btn.getAttribute('data-promo-slug') || '';
   const reservations = btn.getAttribute('data-reservations-url') || '';
   const main = btn.getAttribute('data-main-url') || '';
+  const colorName = btn.getAttribute('data-color-name') || '';
   const color1 = btn.getAttribute('data-color1') || '';
   const color2 = btn.getAttribute('data-color2') || '';
 
+  // Populate fields correctly
   document.getElementById('promo-slug').value = promo;
   document.getElementById('reservations-url').value = reservations;
   document.getElementById('main-url').value = main;
 
-  // Update var1/var2 with the primary & secondary colors (if present)
+  // Save last selected label for template replacement
+  const label = btn.textContent || '';
+  let hidden = document.getElementById('last-selected-label');
+  if (!hidden) {
+    hidden = document.createElement('input');
+    hidden.type = 'hidden';
+    hidden.id = 'last-selected-label';
+    document.body.appendChild(hidden);
+  }
+  hidden.value = label;
+
+  // Update var1/var2 using parsed primary & secondary colors if present
   if (color1) {
     document.getElementById('var1').value = color1;
     updateColor(document.getElementById('var1'));
