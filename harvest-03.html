@@ -198,10 +198,14 @@
     <div><label for="var-grooming">var-grooming</label><input id="var-grooming"></div>
     <div><label for="var-training">var-training</label><input id="var-training"></div>
 
-    <!-- New resort variables -->
+    <!-- New resort variables (visible now) -->
     <div><label for="promo-slug">promo-slug</label><input id="promo-slug" placeholder="e.g. happy-paws-2025"></div>
     <div><label for="reservations-url">reservations-url</label><input id="reservations-url" placeholder="https://reserve.example.com/happypaws"></div>
     <div><label for="main-url">main-url</label><input id="main-url" placeholder="https://happypaws.example.com"></div>
+
+    <!-- Newly added visible image URL inputs so you can see/edit them -->
+    <div><label for="img-url-1">img-url-1</label><input id="img-url-1" placeholder="https://.../image1.jpg"></div>
+    <div><label for="img-url-2">img-url-2</label><input id="img-url-2" placeholder="https://.../image2.jpg"></div>
 </div>
 
 <details>
@@ -227,10 +231,10 @@
 <!-- New: Resorts CSV/TSV loader and quick select -->
 <details>
   <summary><h2 style="display:inline">Pet Resorts Quick Select (Load CSV/TSV)</h2></summary>
-  <p style="margin-top:10px">Paste CSV or TSV with flexible headers. Example TSV you provided:</p>
-  <pre style="background:#fafafa;padding:8px;border-radius:4px">ResortName	LandingPageSlugValue	Color	var1	var2	Main URL	RES LINK
-4 Paws Pet Resort	4-paws-pet-resort	Green	#328833	#65b766	https://www.4pawspetresort.com	https://www.4pawspetresort.com/reservation/
-Advantage Pet Center	advantage-pet-center	Violet	#5b46c4	#745af5	https://www.advantagepetcenter.com	https://www.advantagepetcenter.com/reservation/</pre>
+  <p style="margin-top:10px">Paste CSV or TSV with flexible headers. Example TSV your provided:</p>
+  <pre style="background:#fafafa;padding:8px;border-radius:4px">ResortName	LandingPageSlugValue	Color	var1	var2	Main URL	RES LINK	img-url-1	img-url-2
+4 Paws Pet Resort	4-paws-pet-resort	Green	#328833	#65b766	https://www.4pawspetresort.com	https://www.4pawspetresort.com/reservation/	https://.../img1.jpg	https://.../img2.jpg
+Advantage Pet Center	advantage-pet-center	Violet	#5b46c4	#745af5	https://www.advantagepetcenter.com	https://www.advantagepetcenter.com/reservation/	https://.../img1.jpg	https://.../img2.jpg</pre>
   <textarea id="resortCsv" placeholder="Paste CSV/TSV here (one resort per line)."></textarea>
   <div class="resort-controls">
     <button onclick="loadResortsFromTextarea()">Load Resorts</button>
@@ -356,7 +360,6 @@ function applyTemplate() {
     vars[el.id] = applyFindReplace(el.value || '');
   });
 
-  // also include last-selected structured values if present (hidden inputs will already be included)
   // replace placeholders
   Object.keys(vars).forEach(key => {
     template = template.replaceAll("{" + key + "}", vars[key] || '');
@@ -653,6 +656,12 @@ function selectResort(btn) {
   document.getElementById('promo-slug').value = promo;
   document.getElementById('reservations-url').value = reservations;
   document.getElementById('main-url').value = main;
+
+  // Populate visible image fields (new)
+  const img1El = document.getElementById('img-url-1');
+  const img2El = document.getElementById('img-url-2');
+  if (img1El) img1El.value = img1;
+  if (img2El) img2El.value = img2;
 
   // Save last selected label for template replacement
   const label = btn.textContent || '';
