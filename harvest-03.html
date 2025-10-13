@@ -147,7 +147,7 @@
     border-radius:5px;
     border:1px solid #ddd;
     background:#fff;
-    color:#000;              /* <-- explicit black text */
+    color:#000;              /* explicit black text */
     cursor:pointer;
     font-weight:600;
     box-shadow: 0 1px 0 rgba(0,0,0,0.03);
@@ -225,14 +225,15 @@
   <button onclick="harvestVariables()">🌾 Harvest URLs</button>
 </details><br><br>
 
-<!-- New: Resorts CSV loader and quick select -->
+<!-- New: Resorts CSV/TSV loader and quick select -->
 <details>
-  <summary><h2 style="display:inline">Pet Resorts Quick Select (Load CSV)</h2></summary>
-  <p style="margin-top:10px">Paste CSV with columns: ResortName,promo-slug,main-url,reservations Url (header optional). Example:</p>
+  <summary><h2 style="display:inline">Pet Resorts Quick Select (Load CSV/TSV)</h2></summary>
+  <p style="margin-top:10px">Paste CSV or TSV with columns: ResortName,promo-slug,main-url,reservations Url (header optional). Example:</p>
   <pre style="background:#fafafa;padding:8px;border-radius:4px">ResortName,promo-slug,main-url,reservations Url
+Advantage Pet Center	advantage-pet-center	https://www.advantagepetcenter.com	https://www.advantagepetcenter.com/reservation/
 Happy Paws,happy-paws-2025,https://happypaws.example.com,https://reserve.example.com/happypaws
 "Cozy Canines","cozy-canines-2025","https://cozycanines.example.com","https://reserve.example.com/cozy"</pre>
-  <textarea id="resortCsv" placeholder="Paste CSV here (one resort per line)."></textarea>
+  <textarea id="resortCsv" placeholder="Paste CSV/TSV here (one resort per line)."></textarea>
   <div class="resort-controls">
     <button onclick="loadResortsFromTextarea()">Load Resorts</button>
     <button onclick="clearResorts()">Clear Resorts</button>
@@ -400,7 +401,7 @@ function updateTemplateList() {
   if (templates[currentValue]) select.value = currentValue;
 }
 
-// --- CSV parsing and resorts quick-select (header-aware) ---
+// --- CSV/TSV parsing and resorts quick-select (header-aware & tab-normalizing) ---
 
 function simpleCsvParse(text) {
   // RFC-style friendly parser: handles quoted fields and escaped quotes ("")
@@ -455,8 +456,18 @@ function normalizeHeaderKey(str) {
 }
 
 function loadResortsFromTextarea() {
-  const text = document.getElementById('resortCsv').value.trim();
-  if (!text) return alert('Please paste CSV text for resorts.');
+  let text = document.getElementById('resortCsv').value;
+  if (!text || !text.trim()) return alert('Please paste CSV/TSV text for resorts.');
+
+  // If the paste looks like tab-separated (TSV) and there are no commas, convert tabs to commas.
+  // This handles rows like: Name<TAB>promo-slug<TAB>main-url<TAB>reservations-url
+  if (text.includes('\t') && !text.includes(',')) {
+    text = text.replace(/\t/g, ',');
+  }
+
+  // Trim leading/trailing whitespace and remove any stray BOM
+  text = text.trim().replace(/^\uFEFF/, '');
+
   const rows = simpleCsvParse(text);
   if (!rows.length) return alert('No CSV rows found.');
 
@@ -465,7 +476,6 @@ function loadResortsFromTextarea() {
   const first = rows[0];
   let hasHeader = false;
   if (first.length >= 4) {
-    // if first row contains known header tokens, treat as header
     const joined = first.join(',').toLowerCase();
     const headerLike = ['resort', 'resortname', 'promo', 'promo-slug', 'main', 'main-url', 'reservation', 'reservations', 'reservations-url'].some(h => joined.includes(h));
     if (headerLike) hasHeader = true;
@@ -482,13 +492,12 @@ function loadResortsFromTextarea() {
       else if (h.includes('main')) found.mainIdx = idx;
       else if (h.includes('reserv')) found.reservationsIdx = idx;
     });
-    // override mapping only for indices we discovered
     mapping.nameIdx = (found.nameIdx !== undefined) ? found.nameIdx : mapping.nameIdx;
     mapping.promoIdx = (found.promoIdx !== undefined) ? found.promoIdx : mapping.promoIdx;
     mapping.mainIdx = (found.mainIdx !== undefined) ? found.mainIdx : mapping.mainIdx;
     mapping.reservationsIdx = (found.reservationsIdx !== undefined) ? found.reservationsIdx : mapping.reservationsIdx;
   } else {
-    // If no header detected, assume the order you described:
+    // If no header detected, assume the order:
     // ResortName, promo-slug, main-url, reservations Url
     mapping = { nameIdx: 0, promoIdx: 1, mainIdx: 2, reservationsIdx: 3 };
   }
@@ -497,7 +506,6 @@ function loadResortsFromTextarea() {
   const resorts = [];
   for (let i = startRow; i < rows.length; i++) {
     const r = rows[i];
-    // defensively read columns (some rows may be shorter)
     const name = (r[mapping.nameIdx] || '').trim();
     const promoSlug = (r[mapping.promoIdx] || '').trim();
     const mainUrl = (r[mapping.mainIdx] || '').trim();
@@ -506,7 +514,7 @@ function loadResortsFromTextarea() {
     resorts.push({ name, promoSlug, reservationsUrl, mainUrl });
   }
 
-  if (!resorts.length) return alert('No valid resort rows found. Ensure CSV has ResortName,promo-slug,main-url,reservations Url per line (header optional).');
+  if (!resorts.length) return alert('No valid resort rows found. Ensure CSV/TSV has ResortName,promo-slug,main-url,reservations Url per line (header optional).');
   localStorage.setItem('resortsList', JSON.stringify(resorts));
   renderResortButtons(resorts);
   alert('Resorts loaded: ' + resorts.length);
@@ -534,11 +542,9 @@ function renderResortButtons(resorts) {
 }
 
 function selectResort(btn) {
-  // remove selected class from others
   document.querySelectorAll('.resort-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
 
-  // read explicit attributes
   const promo = btn.getAttribute('data-promo-slug') || '';
   const reservations = btn.getAttribute('data-reservations-url') || '';
   const main = btn.getAttribute('data-main-url') || '';
