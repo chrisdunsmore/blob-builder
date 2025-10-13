@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Template Engine - Final with Colors and Clean Harvest</title>
+  <style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #f9f9f9;
+    color: #333;
+    padding: 20px;
+  }
+  h2 { margin-top: 30px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .replace-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  input, textarea, select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: monospace;
+  }
+  textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+  button {
+    padding: 10px 15px;
+    margin-top: 10px;
+    margin-right: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    border: none;
+    background: #4CAF50;
+    color: white;
+    border-radius: 4px;
+  }
+  .color-themes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .color-btn {
+    border: none;
+    padding: 10px 14px;
+    color: #fff;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 5px;
+  }
+  pre {
+    background: #eee;
+    padding: 15px;
+    border-radius: 5px;
+    overflow-x: auto;
+    font-family: Consolas, monospace;
+  }
+  iframe {
+    width: 100%;
+    height: 500px;
+    border: 1px solid #ccc;
+    background: white;
+  }
+  .template-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .template-controls input[type="text"] {
+    width: 150px;
+    font-family: inherit;
+  }
+  .template-controls select {
+    width: 180px;
+    font-family: inherit;
+  }
+  .template-controls button {
+    margin-top: 0;
+    margin-right: 0;
+    padding: 8px 12px;
+  }
+
+  /* --- OUTPUT & PREVIEW GRID --- */
+  .output-preview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+    margin-bottom: 30px;
+  }
+  .output-preview-grid > div {
+    min-width: 0; /* for overflow handling in grid children */
+  }
+  .output-preview-grid pre,
+  .output-preview-grid code {
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: auto;
+    white-space: pre-wrap;    /* Allows long lines to wrap */
+    word-break: break-all;    /* Breaks very long words/URLs */
+  }
+  .output-preview-grid pre {
+    max-height: 350px;
+    overflow-y: auto;
+  }
+  .output-preview-grid iframe {
+    min-height: 500px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  @media (max-width: 900px) {
+    .output-preview-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+  <!-- Highlight.js CSS and JS for syntax highlighting -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/xml.min.js"></script>
+</head>
+<body>
+
+<h1>Template Engine (Final Stable Version)</h1>
+
+<h2>Color Theme Quick Select</h2>
+<div class="color-themes">
+    <button class="color-btn" style="background:#328833" onclick="setColors('#328833','#65b766')">Green</button>
+    <button class="color-btn" style="background:#5b46c4" onclick="setColors('#5b46c4','#745af5')">Violet</button>
+    <button class="color-btn" style="background:#c74200" onclick="setColors('#c74200','#ff8141')">Tawny Orange</button>
+    <button class="color-btn" style="background:#cc0100" onclick="setColors('#cc0100','#fe3725')">Red</button>
+    <button class="color-btn" style="background:#446775" onclick="setColors('#446775','#527c8e')">Slate Grey</button>
+    <button class="color-btn" style="background:#4b6a3c" onclick="setColors('#4b6a3c','#6a7a62')">Old Vine</button>
+    <button class="color-btn" style="background:#337d94" onclick="setColors('#337d94','#4b99b1')">Teal Blue</button>
+    <button class="color-btn" style="background:#19507f" onclick="setColors('#19507f','#296293')">Mid Blue</button>
+    <button class="color-btn" style="background:#3b4caa" onclick="setColors('#3b4caa','#5069e7')">Light Navy</button>
+    <button class="color-btn" style="background:#4a0d66" onclick="setColors('#4a0d66','#6e3d85')">Purple</button>
+</div>
+
+<h2>Part 1: Define Variables</h2>
+<div class="grid">
+    <div><label for="var1">var1 (Primary Color)</label><input id="var1" oninput="updateColor(this)"></div>
+    <div><label for="var2">var2 (Secondary Color)</label><input id="var2" oninput="updateColor(this)"></div>
+    <div><label for="var3">var3</label><input id="var3"></div>
+    <div><label for="var4">var4</label><input id="var4"></div>
+    <div><label for="var5">var5</label><input id="var5"></div>
+    <div><label for="var6">var6</label><input id="var6"></div>
+    <div><label for="var7">var7</label><input id="var7"></div>
+    <div><label for="var8">var8</label><input id="var8"></div>
+    <div><label for="var-boarding">var-boarding</label><input id="var-boarding"></div>
+    <div><label for="var-daycare">var-daycare</label><input id="var-daycare"></div>
+    <div><label for="var-grooming">var-grooming</label><input id="var-grooming"></div>
+    <div><label for="var-training">var-training</label><input id="var-training"></div>
+</div>
+
+<details>
+  <summary><h2 style="display:inline">Optional: Find &amp; Replace in Variables</h2></summary>
+  <div class="replace-grid" style="margin-top:15px;">
+      <div><label for="find1">Find 1</label><input id="find1"></div>
+      <div><label for="replace1">Replace with</label><input id="replace1"></div>
+      <div><label for="find2">Find 2</label><input id="find2"></div>
+      <div><label for="replace2">Replace with</label><input id="replace2"></div>
+      <div><label for="find3">Find 3</label><input id="find3"></div>
+      <div><label for="replace3">Replace with</label><input id="replace3"></div>
+      <div><label for="find4">Find 4</label><input id="find4"></div>
+      <div><label for="replace4">Replace with</label><input id="replace4"></div>
+  </div>
+</details><br><br>
+
+<details>
+  <summary><h2 style="display:inline">Part 2A: Harvest Area</h2></summary>
+  <textarea id="harvestArea" placeholder="Paste messy links here..."></textarea>
+  <button onclick="harvestVariables()">🌾 Harvest URLs</button>
+</details><br><br>
+
+<details>
+  <summary><h2 style="display:inline">Part 2B: HTML Template</h2></summary>
+  <div class="template-controls">
+    <input type="text" id="templateName" placeholder="Template name">
+    <button onclick="saveTemplate()">Save Template</button>
+    <select id="templateList">
+      <option value="">-- Select Template --</option>
+    </select>
+    <button onclick="loadTemplate()">Load</button>
+    <button onclick="deleteTemplate()">Delete</button>
+  </div>
+  <textarea id="template" placeholder='Example: <a href="{var2}" style="color:{var1}">{var3}</a>'></textarea>
+  <button onclick="applyTemplate()">Generate HTML</button>
+</details><br><br>
+  
+<div class="output-preview-grid">
+  <div>
+    <h2>Part 3: HTML Output</h2>
+    <button onclick="copyToClipboard()">📋 Copy HTML</button>
+    <pre id="highlighted"><code class="language-html"></code></pre>
+  </div>
+  <div>
+    <h2>Part 4: Live Preview</h2>
+    <iframe id="preview"></iframe>
+  </div>
+</div>
+
+<script>
+function setColors(primary, secondary) {
+  document.getElementById("var1").value = primary;
+  document.getElementById("var2").value = secondary;
+  updateColor(document.getElementById("var1"));
+  updateColor(document.getElementById("var2"));
+}
+
+function updateColor(input) {
+  const val = input.value.trim();
+  if (/^#[0-9a-f]{6}$/i.test(val)) {
+    input.style.backgroundColor = val;
+    input.style.color = "#fff";
+  } else {
+    input.style.backgroundColor = "";
+    input.style.color = "";
+  }
+}
+
+function harvestVariables() {
+  const harvestText = document.getElementById("harvestArea").value;
+  const anchors = [...harvestText.matchAll(/<a\s+[^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/gi)];
+  let matches = 0;
+  anchors.forEach(match => {
+    let url = match[1];
+    if (url.includes('?')) {
+      url = url.split('?')[0];
+    }
+    const text = match[2].toLowerCase();
+    if (text.includes('boarding')) { document.getElementById('var-boarding').value = url; matches++; }
+    if (text.includes('daycare')) { document.getElementById('var-daycare').value = url; matches++; }
+    if (text.includes('grooming')) { document.getElementById('var-grooming').value = url; matches++; }
+    if (text.includes('training')) { document.getElementById('var-training').value = url; matches++; }
+  });
+  alert(matches ? 'Harvest complete!' : 'No matches found.');
+}
+
+function applyFindReplace(str) {
+  for (let i = 1; i <= 4; i++) {
+    const find = document.getElementById("find" + i).value;
+    const replace = document.getElementById("replace" + i).value;
+    if (find) str = str.split(find).join(replace);
+  }
+  return str;
+}
+
+function applyTemplate() {
+  let template = document.getElementById("template").value;
+  const ids = ["var1","var2","var3","var4","var5","var6","var7","var8","var-boarding","var-daycare","var-grooming","var-training"];
+  ids.forEach(id => {
+    const value = applyFindReplace(document.getElementById(id).value);
+    template = template.replaceAll("{" + id + "}", value);
+  });
+  // Set as textContent for safe HTML display in code block
+  document.getElementById("highlighted").querySelector("code").textContent = template;
+  // Highlight.js colorizes it
+  hljs.highlightElement(document.getElementById("highlighted").querySelector("code"));
+  // Live preview
+  document.getElementById("preview").srcdoc = template;
+}
+
+function copyToClipboard() {
+  const codeEl = document.getElementById("highlighted").querySelector("code");
+  const dummy = document.createElement("textarea");
+  dummy.value = codeEl.textContent;
+  document.body.appendChild(dummy);
+  dummy.select();
+  document.execCommand("copy");
+  document.body.removeChild(dummy);
+  alert('HTML copied!');
+}
+
+// --- Template Save/Load/Delete Logic ---
+
+function getTemplates() {
+  let templates = localStorage.getItem("myTemplates");
+  return templates ? JSON.parse(templates) : {};
+}
+
+function setTemplates(templates) {
+  localStorage.setItem("myTemplates", JSON.stringify(templates));
+}
+
+function saveTemplate() {
+  const name = document.getElementById("templateName").value.trim();
+  if (!name) return alert("Please enter a template name.");
+  const value = document.getElementById("template").value;
+  let templates = getTemplates();
+  templates[name] = value;
+  setTemplates(templates);
+  alert("Template saved!");
+  updateTemplateList();
+}
+
+function loadTemplate() {
+  const list = document.getElementById("templateList");
+  const name = list.value;
+  if (!name) return alert("Please select a template.");
+  const templates = getTemplates();
+  document.getElementById("template").value = templates[name] || "";
+}
+
+function deleteTemplate() {
+  const list = document.getElementById("templateList");
+  const name = list.value;
+  if (!name) return alert("Please select a template to delete.");
+  let templates = getTemplates();
+  if (templates[name] !== undefined) {
+    if (confirm(`Delete template "${name}"?`)) {
+      delete templates[name];
+      setTemplates(templates);
+      updateTemplateList();
+      alert("Template deleted.");
+      document.getElementById("template").value = "";
+    }
+  }
+}
+
+function updateTemplateList() {
+  const select = document.getElementById("templateList");
+  const templates = getTemplates();
+  const currentValue = select.value;
+  select.innerHTML = '<option value="">-- Select Template --</option>';
+  Object.keys(templates).forEach(name => {
+    const option = document.createElement("option");
+    option.value = name;
+    option.textContent = name;
+    select.appendChild(option);
+  });
+  if (templates[currentValue]) select.value = currentValue;
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+  // Load the last used unnamed template (for backward compatibility)
+  const last = localStorage.getItem('myTemplate');
+  if (last && !getTemplates()["(Last unnamed)"]) {
+    let templates = getTemplates();
+    templates["(Last unnamed)"] = last;
+    setTemplates(templates);
+  }
+  updateTemplateList();
+});
+</script>
+
+</body>
+</html>
