@@ -3,10 +3,246 @@
 <head>
   <meta charset="UTF-8">
   <title>Template Engine - Final with Colors and Clean Harvest</title>
-  <!-- ... (rest of head unchanged) ... -->
+  <style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #f9f9f9;
+    color: #333;
+    padding: 20px;
+  }
+  h2 { margin-top: 30px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .replace-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  input, textarea, select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: monospace;
+  }
+  textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+  button {
+    padding: 10px 15px;
+    margin-top: 10px;
+    margin-right: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    border: none;
+    background: #4CAF50;
+    color: white;
+    border-radius: 4px;
+  }
+  .color-themes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .color-btn {
+    border: none;
+    padding: 10px 14px;
+    color: #fff;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 5px;
+  }
+  pre {
+    background: #eee;
+    padding: 15px;
+    border-radius: 5px;
+    overflow-x: auto;
+    font-family: Consolas, monospace;
+  }
+  iframe {
+    width: 100%;
+    height: 500px;
+    border: 1px solid #ccc;
+    background: white;
+  }
+  .template-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .template-controls input[type="text"] {
+    width: 150px;
+    font-family: inherit;
+  }
+  .template-controls select {
+    width: 180px;
+    font-family: inherit;
+  }
+  .template-controls button {
+    margin-top: 0;
+    margin-right: 0;
+    padding: 8px 12px;
+  }
+
+  /* --- OUTPUT & PREVIEW GRID --- */
+  .output-preview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+    margin-bottom: 30px;
+  }
+  .output-preview-grid > div {
+    min-width: 0; /* for overflow handling in grid children */
+  }
+  .output-preview-grid pre,
+  .output-preview-grid code {
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: auto;
+    white-space: pre-wrap;    /* Allows long lines to wrap */
+    word-break: break-all;    /* Breaks very long words/URLs */
+  }
+  .output-preview-grid pre {
+    max-height: 350px;
+    overflow-y: auto;
+  }
+  .output-preview-grid iframe {
+    min-height: 500px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  @media (max-width: 900px) {
+    .output-preview-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Resorts area */
+  .resort-controls {
+    margin-bottom: 12px;
+    display:flex;
+    gap:8px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+  .resort-list {
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:10px;
+  }
+  /* Make resort buttons clearly readable (black text fallback) */
+  .resort-btn {
+    padding:8px 10px;
+    border-radius:5px;
+    border:1px solid #ddd;
+    background:#fff;
+    color:#000;              /* explicit black text fallback */
+    cursor:pointer;
+    font-weight:600;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.03);
+  }
+  .resort-btn:hover {
+    transform: translateY(-1px);
+  }
+  .resort-btn.selected {
+    outline:2px solid #4CAF50;
+  }
+
+</style>
+  <!-- Highlight.js CSS and JS for syntax highlighting -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/xml.min.js"></script>
 </head>
 <body>
-<!-- ... (earlier body content unchanged) ... -->
+
+<h1>Template Engine (Final Stable Version)</h1>
+
+<h2>Color Theme Quick Select</h2>
+<div class="color-themes">
+    <button class="color-btn" style="background:#328833" onclick="setColors('#328833','#65b766')">Green</button>
+    <button class="color-btn" style="background:#5b46c4" onclick="setColors('#5b46c4','#745af5')">Violet</button>
+    <button class="color-btn" style="background:#c74200" onclick="setColors('#c74200','#ff8141')">Tawny Orange</button>
+    <button class="color-btn" style="background:#cc0100" onclick="setColors('#cc0100','#fe3725')">Red</button>
+    <button class="color-btn" style="background:#446775" onclick="setColors('#446775','#527c8e')">Slate Grey</button>
+    <button class="color-btn" style="background:#4b6a3c" onclick="setColors('#4b6a3c','#6a7a62')">Old Vine</button>
+    <button class="color-btn" style="background:#337d94" onclick="setColors('#337d94','#4b99b1')">Teal Blue</button>
+    <button class="color-btn" style="background:#19507f" onclick="setColors('#19507f','#296293')">Mid Blue</button>
+    <button class="color-btn" style="background:#3b4caa" onclick="setColors('#3b4caa','#5069e7')">Light Navy</button>
+    <button class="color-btn" style="background:#4a0d66" onclick="setColors('#4a0d66','#6e3d85')">Purple</button>
+</div>
+
+<h2>Part 1: Define Variables</h2>
+<div class="grid">
+    <div><label for="var1">var1 (Primary Color)</label><input id="var1" oninput="updateColor(this)"></div>
+    <div><label for="var2">var2 (Secondary Color)</label><input id="var2" oninput="updateColor(this)"></div>
+    <div><label for="var3">var3</label><input id="var3"></div>
+    <div><label for="var4">var4</label><input id="var4"></div>
+    <div><label for="var5">var5</label><input id="var5"></div>
+    <div><label for="var6">var6</label><input id="var6"></div>
+    <div><label for="var7">var7</label><input id="var7"></div>
+    <div><label for="var8">var8</label><input id="var8"></div>
+    <div><label for="var-boarding">var-boarding</label><input id="var-boarding"></div>
+    <div><label for="var-daycare">var-daycare</label><input id="var-daycare"></div>
+    <div><label for="var-grooming">var-grooming</label><input id="var-grooming"></div>
+    <div><label for="var-training">var-training</label><input id="var-training"></div>
+
+    <!-- New resort variables (visible now) -->
+    <div><label for="promo-slug">promo-slug</label><input id="promo-slug" placeholder="e.g. happy-paws-2025"></div>
+    <div><label for="reservations-url">reservations-url</label><input id="reservations-url" placeholder="https://reserve.example.com/happypaws"></div>
+    <div><label for="main-url">main-url</label><input id="main-url" placeholder="https://happypaws.example.com"></div>
+
+    <!-- Newly added visible image URL inputs so you can see/edit them -->
+    <div><label for="img-url-1">img-url-1</label><input id="img-url-1" placeholder="https://.../image1.jpg"></div>
+    <div><label for="img-url-2">img-url-2</label><input id="img-url-2" placeholder="https://.../image2.jpg"></div>
+</div>
+
+<details>
+  <summary><h2 style="display:inline">Optional: Find &amp; Replace in Variables</h2></summary>
+  <div class="replace-grid" style="margin-top:15px;">
+      <div><label for="find1">Find 1</label><input id="find1"></div>
+      <div><label for="replace1">Replace with</label><input id="replace1"></div>
+      <div><label for="find2">Find 2</label><input id="find2"></div>
+      <div><label for="replace2">Replace with</label><input id="replace2"></div>
+      <div><label for="find3">Find 3</label><input id="find3"></div>
+      <div><label for="replace3">Replace with</label><input id="replace3"></div>
+      <div><label for="find4">Find 4</label><input id="find4"></div>
+      <div><label for="replace4">Replace with</label><input id="replace4"></div>
+  </div>
+</details><br><br>
+
+<details>
+  <summary><h2 style="display:inline">Part 2A: Harvest Area</h2></summary>
+  <textarea id="harvestArea" placeholder="Paste messy links here..."></textarea>
+  <button onclick="harvestVariables()">🌾 Harvest URLs</button>
+</details><br><br>
+
+<!-- New: Resorts CSV/TSV loader and quick select -->
+<details>
+  <summary><h2 style="display:inline">Pet Resorts Quick Select (Load CSV/TSV)</h2></summary>
+  <p style="margin-top:10px">Paste CSV or TSV with flexible headers. Example TSV your provided:</p>
+  <pre style="background:#fafafa;padding:8px;border-radius:4px">ResortName	LandingPageSlugValue	Color	var1	var2	Main URL	RES LINK	img-url-1	img-url-2
+4 Paws Pet Resort	4-paws-pet-resort	Green	#328833	#65b766	https://www.4pawspetresort.com	https://www.4pawspetresort.com/reservation/	https://.../img1.jpg	https://.../img2.jpg
+Advantage Pet Center	advantage-pet-center	Violet	#5b46c4	#745af5	https://www.advantagepetcenter.com	https://www.advantagepetcenter.com/reservation/	https://.../img1.jpg	https://.../img2.jpg</pre>
+  <textarea id="resortCsv" placeholder="Paste CSV/TSV here (one resort per line)."></textarea>
+  <div class="resort-controls">
+    <button onclick="loadResortsFromTextarea()">Load Resorts</button>
+    <button onclick="clearResorts()">Clear Resorts</button>
+    <label style="font-weight:600;margin-left:8px;">Or use stored resorts</label>
+  </div>
+  <div id="resort-list" class="resort-list"></div>
+</details><br><br>
 
 <details>
   <summary><h2 style="display:inline">Part 2B: HTML Template</h2></summary>
@@ -17,8 +253,6 @@
       <option value="">-- Select Template --</option>
     </select>
     <button onclick="loadTemplate()">Load</button>
-    <!-- NEW SUPER BUTTON ADDED BELOW -->
-    <button onclick="superLoadGenCopy()">Super Load + Generate + Copy</button>
     <button onclick="deleteTemplate()">Delete</button>
   </div>
   <textarea id="template" placeholder='Example: <a href="{reservations-url}" style="color:{var1}">{label}</a>'></textarea>
@@ -38,25 +272,463 @@
 </div>
 
 <script>
-/* ... existing JS above ... */
+function setColors(primary, secondary) {
+  document.getElementById("var1").value = primary;
+  document.getElementById("var2").value = secondary;
+  updateColor(document.getElementById("var1"));
+  updateColor(document.getElementById("var2"));
+}
 
-// --- SUPER BUTTON FUNCTION ---
-function superLoadGenCopy() {
-  // 1. Load the template
+function updateColor(input) {
+  const val = input.value.trim();
+  if (/^#[0-9a-f]{6}$/i.test(val) || /^[a-z]+$/i.test(val)) {
+    try {
+      input.style.backgroundColor = val;
+      const contrast = getContrastColor(val);
+      input.style.color = contrast;
+    } catch (e) {
+      input.style.backgroundColor = "";
+      input.style.color = "";
+    }
+  } else {
+    input.style.backgroundColor = "";
+    input.style.color = "";
+  }
+}
+
+function hexToRgb(hex) {
+  if (!hex) return null;
+  hex = hex.replace('#','').trim();
+  if (hex.length === 3) hex = hex.split('').map(c=>c+c).join('');
+  if (hex.length !== 6) return null;
+  const int = parseInt(hex,16);
+  return { r: (int >> 16) & 255, g: (int >> 8) & 255, b: int & 255 };
+}
+function luminance(r,g,b) {
+  const a = [r,g,b].map(v => {
+    v /= 255;
+    return v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4);
+  });
+  return 0.2126*a[0] + 0.7152*a[1] + 0.0722*a[2];
+}
+function getContrastColor(colorStr) {
+  if (!colorStr) return '#000';
+  const m = colorStr.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+  if (m) {
+    const rgb = hexToRgb(colorStr);
+    if (!rgb) return '#000';
+    const L = luminance(rgb.r, rgb.g, rgb.b);
+    return L > 0.6 ? '#000' : '#fff';
+  }
+  return '#000';
+}
+
+function harvestVariables() {
+  const harvestText = document.getElementById("harvestArea").value;
+  const anchors = [...harvestText.matchAll(/<a\s+[^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/gi)];
+  let matches = 0;
+  anchors.forEach(match => {
+    let url = match[1];
+    if (url.includes('?')) {
+      url = url.split('?')[0];
+    }
+    const text = match[2].toLowerCase();
+    if (text.includes('boarding')) { document.getElementById('var-boarding').value = url; matches++; }
+    if (text.includes('daycare')) { document.getElementById('var-daycare').value = url; matches++; }
+    if (text.includes('grooming')) { document.getElementById('var-grooming').value = url; matches++; }
+    if (text.includes('training')) { document.getElementById('var-training').value = url; matches++; }
+  });
+  alert(matches ? 'Harvest complete!' : 'No matches found.');
+}
+
+function applyFindReplace(str) {
+  for (let i = 1; i <= 4; i++) {
+    const find = document.getElementById("find" + i).value;
+    const replace = document.getElementById("replace" + i).value;
+    if (find) str = str.split(find).join(replace);
+  }
+  return str;
+}
+
+function applyTemplate() {
+  let template = document.getElementById("template").value;
+
+  // Gather all inputs/textarea/select elements that have an id and build a variables map
+  const vars = {};
+  document.querySelectorAll('input[id], textarea[id], select[id]').forEach(el => {
+    // skip empty hidden helper if any
+    vars[el.id] = applyFindReplace(el.value || '');
+  });
+
+  // replace placeholders
+  Object.keys(vars).forEach(key => {
+    template = template.replaceAll("{" + key + "}", vars[key] || '');
+  });
+
+  // also support {label} (last selected label stored in hidden input)
+  const lastLabel = (document.getElementById('last-selected-label') || {}).value || '';
+  template = template.replaceAll("{label}", lastLabel);
+
+  // Set as textContent for safe HTML display in code block
+  document.getElementById("highlighted").querySelector("code").textContent = template;
+  // Highlight.js colorizes it
+  hljs.highlightElement(document.getElementById("highlighted").querySelector("code"));
+  // Live preview
+  document.getElementById("preview").srcdoc = template;
+}
+
+function copyToClipboard() {
+  const codeEl = document.getElementById("highlighted").querySelector("code");
+  const dummy = document.createElement("textarea");
+  dummy.value = codeEl.textContent;
+  document.body.appendChild(dummy);
+  dummy.select();
+  document.execCommand("copy");
+  document.body.removeChild(dummy);
+  alert('HTML copied!');
+}
+
+// --- Template Save/Load/Delete Logic ---
+
+function getTemplates() {
+  let templates = localStorage.getItem("myTemplates");
+  return templates ? JSON.parse(templates) : {};
+}
+
+function setTemplates(templates) {
+  localStorage.setItem("myTemplates", JSON.stringify(templates));
+}
+
+function saveTemplate() {
+  const name = document.getElementById("templateName").value.trim();
+  if (!name) return alert("Please enter a template name.");
+  const value = document.getElementById("template").value;
+  let templates = getTemplates();
+  templates[name] = value;
+  setTemplates(templates);
+  alert("Template saved!");
+  updateTemplateList();
+}
+
+function loadTemplate() {
   const list = document.getElementById("templateList");
   const name = list.value;
   if (!name) return alert("Please select a template.");
   const templates = getTemplates();
   document.getElementById("template").value = templates[name] || "";
-
-  // 2. Generate HTML
-  applyTemplate();
-
-  // 3. Copy HTML
-  copyToClipboard();
 }
 
-/* ... existing JS below ... */
+function deleteTemplate() {
+  const list = document.getElementById("templateList");
+  const name = list.value;
+  if (!name) return alert("Please select a template to delete.");
+  let templates = getTemplates();
+  if (templates[name] !== undefined) {
+    if (confirm(`Delete template "${name}"?`)) {
+      delete templates[name];
+      setTemplates(templates);
+      updateTemplateList();
+      alert("Template deleted.");
+      document.getElementById("template").value = "";
+    }
+  }
+}
+
+function updateTemplateList() {
+  const select = document.getElementById("templateList");
+  const templates = getTemplates();
+  const currentValue = select.value;
+  select.innerHTML = '<option value="">-- Select Template --</option>';
+  Object.keys(templates).forEach(name => {
+    const option = document.createElement("option");
+    option.value = name;
+    option.textContent = name;
+    select.appendChild(option);
+  });
+  if (templates[currentValue]) select.value = currentValue;
+}
+
+// --- CSV/TSV parsing and resorts quick-select (improved header mapping, img-url support) ---
+function simpleCsvParse(text) {
+  const rows = [];
+  let i = 0;
+  let cur = '';
+  let row = [];
+  let inQuotes = false;
+  while (i < text.length) {
+    const ch = text[i];
+    if (ch === '"') {
+      if (inQuotes && text[i+1] === '"') {
+        cur += '"';
+        i += 2;
+        continue;
+      }
+      inQuotes = !inQuotes;
+      i++;
+      continue;
+    }
+    if (ch === ',' && !inQuotes) {
+      row.push(cur);
+      cur = '';
+      i++;
+      continue;
+    }
+    if ((ch === '\n' || ch === '\r') && !inQuotes) {
+      if (ch === '\r' && text[i+1] === '\n') i++;
+      row.push(cur);
+      rows.push(row.map(s => s.trim()));
+      row = [];
+      cur = '';
+      i++;
+      continue;
+    }
+    cur += ch;
+    i++;
+  }
+  if (cur !== '' || row.length) {
+    row.push(cur);
+    rows.push(row.map(s => s.trim()));
+  }
+  return rows.filter(r => r.length > 0 && !(r.length === 1 && r[0] === ''));
+}
+
+function normalizeHeaderKey(str) {
+  return (str || '').trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '');
+}
+
+function loadResortsFromTextarea() {
+  let text = document.getElementById('resortCsv').value;
+  if (!text || !text.trim()) return alert('Please paste CSV/TSV text for resorts.');
+
+  // Auto-detect TSV: if tabs present and more tabs than commas, replace tabs with commas.
+  if (text.includes('\t') && ( (text.match(/,/g)||[]).length < (text.match(/\t/g)||[]).length )) {
+    text = text.replace(/\t/g, ',');
+  }
+
+  text = text.trim().replace(/^\uFEFF/, '');
+  const rows = simpleCsvParse(text);
+  if (!rows.length) return alert('No CSV rows found.');
+
+  const first = rows[0];
+  let hasHeader = false;
+  if (first.length >= 3) {
+    const joined = first.join(',').toLowerCase();
+    const headerLike = ['resort', 'resortname', 'promo', 'promo-slug', 'landing', 'slug', 'main', 'reserv', 'res-link', 'var1', 'var2', 'color', 'primary', 'secondary', 'img', 'image', 'img-url'].some(h => joined.includes(h));
+    if (headerLike) hasHeader = true;
+  }
+
+  // default fallback order if no header:
+  // 0 ResortName,1 promo-slug,2 main-url,3 reservations-url,4 color1,5 color2,6 color3,7 img-url-1,8 img-url-2
+  let mapping = { nameIdx: 0, promoIdx: 1, mainIdx: 2, reservationsIdx: 3, colorNameIdx: -1, color1Idx: 4, color2Idx: 5, color3Idx: 6, img1Idx: 7, img2Idx: 8 };
+  if (hasHeader) {
+    const hdr = first.map(h => normalizeHeaderKey(h));
+    const found = {};
+    hdr.forEach((h, idx) => {
+      if (!h) return;
+      if (h.includes('resort') || h.includes('name')) found.nameIdx = idx;
+      else if (h.includes('slug') || h.includes('landing')) found.promoIdx = idx;
+      else if (h.includes('reserv') || h.includes('res-link') || h.includes('reslink')) found.reservationsIdx = idx;
+      else if ((h.includes('main') && h.includes('url')) || h === 'main' || (h.includes('main') && h.includes('link'))) found.mainIdx = idx;
+      else if (h.includes('var1') || h.includes('var-1') || h.includes('primary') || h.includes('color1')) found.color1Idx = idx;
+      else if (h.includes('var2') || h.includes('var-2') || h.includes('secondary') || h.includes('color2')) found.color2Idx = idx;
+      else if (h === 'color' || h.includes('color-name') || h.includes('colorname')) found.colorNameIdx = idx;
+      else if (h.includes('accent') || h.includes('color3')) found.color3Idx = idx;
+      else if (h.includes('img-url-1') || (h.includes('img') && h.includes('1')) || h.includes('image-1')) found.img1Idx = idx;
+      else if (h.includes('img-url-2') || (h.includes('img') && h.includes('2')) || h.includes('image-2')) found.img2Idx = idx;
+      else if (h.includes('url')) {
+        // generic url -> prefer main if main not set, otherwise reservations
+        if (found.mainIdx === undefined) found.mainIdx = idx;
+        else if (found.reservationsIdx === undefined) found.reservationsIdx = idx;
+      }
+      if (h.includes('landingpage') || h.includes('landing-page') || h.includes('landingpageslug') || h.includes('landing-page-slug') || h.includes('landingpageslugvalue')) {
+        found.promoIdx = idx;
+      }
+      if (h.includes('slug') && found.promoIdx === undefined) found.promoIdx = idx;
+    });
+
+    mapping.nameIdx = (found.nameIdx !== undefined) ? found.nameIdx : mapping.nameIdx;
+    mapping.promoIdx = (found.promoIdx !== undefined) ? found.promoIdx : mapping.promoIdx;
+    mapping.mainIdx = (found.mainIdx !== undefined) ? found.mainIdx : mapping.mainIdx;
+    mapping.reservationsIdx = (found.reservationsIdx !== undefined) ? found.reservationsIdx : mapping.reservationsIdx;
+    mapping.colorNameIdx = (found.colorNameIdx !== undefined) ? found.colorNameIdx : mapping.colorNameIdx;
+    mapping.color1Idx = (found.color1Idx !== undefined) ? found.color1Idx : mapping.color1Idx;
+    mapping.color2Idx = (found.color2Idx !== undefined) ? found.color2Idx : mapping.color2Idx;
+    mapping.color3Idx = (found.color3Idx !== undefined) ? found.color3Idx : mapping.color3Idx;
+    mapping.img1Idx = (found.img1Idx !== undefined) ? found.img1Idx : mapping.img1Idx;
+    mapping.img2Idx = (found.img2Idx !== undefined) ? found.img2Idx : mapping.img2Idx;
+  }
+
+  const startRow = hasHeader ? 1 : 0;
+  const resorts = [];
+  for (let i = startRow; i < rows.length; i++) {
+    const rawRow = rows[i];
+    // Use the very first raw field as the label (as requested)
+    const labelRaw = (rawRow[0] || '').trim();
+
+    const name = (rawRow[mapping.nameIdx] || '').trim();
+    const promoSlug = (rawRow[mapping.promoIdx] || '').trim();
+    const mainUrl = (rawRow[mapping.mainIdx] || '').trim();
+    const reservationsUrl = (rawRow[mapping.reservationsIdx] || '').trim();
+    const colorName = (mapping.colorNameIdx >= 0 ? (rawRow[mapping.colorNameIdx] || '').trim() : '');
+    const color1 = (rawRow[mapping.color1Idx] || '').trim();
+    const color2 = (rawRow[mapping.color2Idx] || '').trim();
+    const color3 = (rawRow[mapping.color3Idx] || '').trim();
+    const img1 = (rawRow[mapping.img1Idx] || '').trim();
+    const img2 = (rawRow[mapping.img2Idx] || '').trim();
+
+    // If everything empty, skip
+    if (!labelRaw && !name && !promoSlug && !mainUrl && !reservationsUrl) continue;
+
+    resorts.push({
+      label: labelRaw || name || ('Resort ' + (i+1)),
+      name, promoSlug, mainUrl, reservationsUrl,
+      colorName, color1, color2, color3,
+      'img-url-1': img1,
+      'img-url-2': img2
+    });
+  }
+
+  if (!resorts.length) return alert('No valid resort rows found. Ensure CSV/TSV has rows.');
+  localStorage.setItem('resortsList', JSON.stringify(resorts));
+  renderResortButtons(resorts);
+  alert('Resorts loaded: ' + resorts.length);
+}
+
+function renderResortButtons(resorts) {
+  const container = document.getElementById('resort-list');
+  container.innerHTML = '';
+  resorts.forEach((r, idx) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'resort-btn';
+    btn.textContent = r.label || ('Resort ' + (idx+1));
+
+    // Attach all known attributes as data-*
+    btn.setAttribute('data-promo-slug', r.promoSlug || '');
+    btn.setAttribute('data-reservations-url', r.reservationsUrl || '');
+    btn.setAttribute('data-main-url', r.mainUrl || '');
+    btn.setAttribute('data-color-name', r.colorName || '');
+    btn.setAttribute('data-color1', r.color1 || '');
+    btn.setAttribute('data-color2', r.color2 || '');
+    btn.setAttribute('data-color3', r.color3 || '');
+    // add img-url fields (new)
+    btn.setAttribute('data-img-url-1', r['img-url-1'] || '');
+    btn.setAttribute('data-img-url-2', r['img-url-2'] || '');
+
+    // Style with primary color if available; otherwise default
+    const primary = (r.color1 || '').trim();
+    if (primary) {
+      try {
+        btn.style.backgroundColor = primary;
+        btn.style.color = getContrastColor(primary);
+        btn.style.borderColor = primary;
+      } catch (e) {
+        btn.style.backgroundColor = '#fff';
+        btn.style.color = '#000';
+      }
+    } else {
+      btn.style.backgroundColor = '#fff';
+      btn.style.color = '#000';
+    }
+
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      selectResort(this);
+    });
+    container.appendChild(btn);
+  });
+}
+
+function selectResort(btn) {
+  document.querySelectorAll('.resort-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+
+  const promo = btn.getAttribute('data-promo-slug') || '';
+  const reservations = btn.getAttribute('data-reservations-url') || '';
+  const main = btn.getAttribute('data-main-url') || '';
+  const colorName = btn.getAttribute('data-color-name') || '';
+  const color1 = btn.getAttribute('data-color1') || '';
+  const color2 = btn.getAttribute('data-color2') || '';
+  const img1 = btn.getAttribute('data-img-url-1') || '';
+  const img2 = btn.getAttribute('data-img-url-2') || '';
+
+  // Populate visible fields
+  document.getElementById('promo-slug').value = promo;
+  document.getElementById('reservations-url').value = reservations;
+  document.getElementById('main-url').value = main;
+
+  // Populate visible image fields (new)
+  const img1El = document.getElementById('img-url-1');
+  const img2El = document.getElementById('img-url-2');
+  if (img1El) img1El.value = img1;
+  if (img2El) img2El.value = img2;
+
+  // Save last selected label for template replacement
+  const label = btn.textContent || '';
+  let hidden = document.getElementById('last-selected-label');
+  if (!hidden) {
+    hidden = document.createElement('input');
+    hidden.type = 'hidden';
+    hidden.id = 'last-selected-label';
+    document.body.appendChild(hidden);
+  }
+  hidden.value = label;
+
+  // Update var1/var2 using parsed primary & secondary colors if present
+  if (color1) {
+    document.getElementById('var1').value = color1;
+    updateColor(document.getElementById('var1'));
+  }
+  if (color2) {
+    document.getElementById('var2').value = color2;
+    updateColor(document.getElementById('var2'));
+  }
+
+  // Create or update hidden inputs for any additional columns (including img-url-1/img-url-2)
+  // Iterate through all data-* attributes of the clicked button and mirror them to hidden inputs
+  for (let i = 0; i < btn.attributes.length; i++) {
+    const attr = btn.attributes[i];
+    if (!attr.name.startsWith('data-')) continue;
+    const key = attr.name.slice(5); // remove "data-"
+    // create or find input with id equal to the key
+    let input = document.getElementById(key);
+    if (!input) {
+      input = document.createElement('input');
+      input.type = 'hidden';
+      input.id = key;
+      document.body.appendChild(input);
+    }
+    input.value = attr.value || '';
+  }
+}
+
+function clearResorts() {
+  localStorage.removeItem('resortsList');
+  document.getElementById('resort-list').innerHTML = '';
+  alert('Resorts cleared.');
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+  // Load the last used unnamed template (for backward compatibility)
+  const last = localStorage.getItem('myTemplate');
+  if (last && !getTemplates()["(Last unnamed)"]) {
+    let templates = getTemplates();
+    templates["(Last unnamed)"] = last;
+    setTemplates(templates);
+  }
+  updateTemplateList();
+
+  // load any stored resorts
+  const stored = localStorage.getItem('resortsList');
+  if (stored) {
+    try {
+      const resorts = JSON.parse(stored);
+      renderResortButtons(resorts);
+    } catch (e) {
+      console.warn('Invalid stored resorts:', e);
+    }
+  }
+});
 </script>
 
 </body>
