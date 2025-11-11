@@ -92,6 +92,29 @@
     margin-right: 0;
     padding: 8px 12px;
   }
+  .template-quick-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 7px;
+    margin-bottom: 4px;
+  }
+  .template-quick-btn {
+    font-size: 13px;
+    background: #eee;
+    color: #222;
+    padding: 5px 12px;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.1s, color 0.1s;
+  }
+  .template-quick-btn:hover {
+    background: #4CAF50;
+    color: #fff;
+    border-color: #45a049;
+  }
 
   /* --- OUTPUT & PREVIEW GRID --- */
   .output-preview-grid {
@@ -158,7 +181,6 @@
   .resort-btn.selected {
     outline:2px solid #4CAF50;
   }
-
 </style>
   <!-- Highlight.js CSS and JS for syntax highlighting -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
@@ -253,10 +275,11 @@ Advantage Pet Center	advantage-pet-center	Violet	#5b46c4	#745af5	https://www.adv
       <option value="">-- Select Template --</option>
     </select>
     <button onclick="loadTemplate()">Load</button>
-    <!-- SUPER BUTTON next to Load -->
     <button onclick="superLoadGenCopy()">Super Load + Generate + Copy</button>
     <button onclick="deleteTemplate()">Delete</button>
   </div>
+  <!-- Quick select template buttons (bottom 8) -->
+  <div id="template-quick-buttons" class="template-quick-buttons"></div>
   <textarea id="template" placeholder='Example: <a href="{reservations-url}" style="color:{var1}">{label}</a>'></textarea>
   <button onclick="applyTemplate()">Generate HTML</button>
 </details><br><br>
@@ -355,27 +378,20 @@ function applyFindReplace(str) {
 function applyTemplate() {
   let template = document.getElementById("template").value;
 
-  // Gather all inputs/textarea/select elements that have an id and build a variables map
   const vars = {};
   document.querySelectorAll('input[id], textarea[id], select[id]').forEach(el => {
-    // skip empty hidden helper if any
     vars[el.id] = applyFindReplace(el.value || '');
   });
 
-  // replace placeholders
   Object.keys(vars).forEach(key => {
     template = template.replaceAll("{" + key + "}", vars[key] || '');
   });
 
-  // also support {label} (last selected label stored in hidden input)
   const lastLabel = (document.getElementById('last-selected-label') || {}).value || '';
   template = template.replaceAll("{label}", lastLabel);
 
-  // Set as textContent for safe HTML display in code block
   document.getElementById("highlighted").querySelector("code").textContent = template;
-  // Highlight.js colorizes it
   hljs.highlightElement(document.getElementById("highlighted").querySelector("code"));
-  // Live preview
   document.getElementById("preview").srcdoc = template;
 }
 
@@ -390,31 +406,46 @@ function copyToClipboard() {
   alert('HTML copied!');
 }
 
-// --- SUPER BUTTON FUNCTION ---
-function superLoadGenCopy() {
-  // 1. Load the template
-  const list = document.getElementById("templateList");
-  const name = list.value;
-  if (!name) return alert("Please select a template.");
+// --- Template Quick Select Buttons ---
+function renderTemplateQuickButtons() {
+  const container = document.getElementById('template-quick-buttons');
   const templates = getTemplates();
-  document.getElementById("template").value = templates[name] || "";
+  const keys = Object.keys(templates);
+  if (!keys.length) {
+    container.innerHTML = '';
+    return;
+  }
 
-  // 2. Generate HTML
-  applyTemplate();
+  const last8 = keys.slice(-8);
 
-  // 3. Copy HTML
-  copyToClipboard();
+  container.innerHTML = '';
+  last8.forEach(name => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'template-quick-btn';
+    btn.textContent = name.length > 24 ? name.slice(0,21)+'…' : name;
+    btn.title = name;
+    btn.onclick = function() {
+      document.getElementById('templateList').value = name;
+      loadTemplate();
+    };
+    container.appendChild(btn);
+  });
 }
 
-// --- Template Save/Load/Delete Logic ---
-
-function getTemplates() {
-  let templates = localStorage.getItem("myTemplates");
-  return templates ? JSON.parse(templates) : {};
-}
-
-function setTemplates(templates) {
-  localStorage.setItem("myTemplates", JSON.stringify(templates));
+function updateTemplateList() {
+  const select = document.getElementById("templateList");
+  const templates = getTemplates();
+  const currentValue = select.value;
+  select.innerHTML = '<option value="">-- Select Template --</option>';
+  Object.keys(templates).forEach(name => {
+    const option = document.createElement("option");
+    option.value = name;
+    option.textContent = name;
+    select.appendChild(option);
+  });
+  if (templates[currentValue]) select.value = currentValue;
+  renderTemplateQuickButtons();
 }
 
 function saveTemplate() {
@@ -426,6 +457,15 @@ function saveTemplate() {
   setTemplates(templates);
   alert("Template saved!");
   updateTemplateList();
+}
+
+function getTemplates() {
+  let templates = localStorage.getItem("myTemplates");
+  return templates ? JSON.parse(templates) : {};
+}
+
+function setTemplates(templates) {
+  localStorage.setItem("myTemplates", JSON.stringify(templates));
 }
 
 function loadTemplate() {
@@ -452,18 +492,14 @@ function deleteTemplate() {
   }
 }
 
-function updateTemplateList() {
-  const select = document.getElementById("templateList");
+function superLoadGenCopy() {
+  const list = document.getElementById("templateList");
+  const name = list.value;
+  if (!name) return alert("Please select a template.");
   const templates = getTemplates();
-  const currentValue = select.value;
-  select.innerHTML = '<option value="">-- Select Template --</option>';
-  Object.keys(templates).forEach(name => {
-    const option = document.createElement("option");
-    option.value = name;
-    option.textContent = name;
-    select.appendChild(option);
-  });
-  if (templates[currentValue]) select.value = currentValue;
+  document.getElementById("template").value = templates[name] || "";
+  applyTemplate();
+  copyToClipboard();
 }
 
 // --- CSV/TSV parsing and resorts quick-select (improved header mapping, img-url support) ---
@@ -518,7 +554,6 @@ function loadResortsFromTextarea() {
   let text = document.getElementById('resortCsv').value;
   if (!text || !text.trim()) return alert('Please paste CSV/TSV text for resorts.');
 
-  // Auto-detect TSV: if tabs present and more tabs than commas, replace tabs with commas.
   if (text.includes('\t') && ( (text.match(/,/g)||[]).length < (text.match(/\t/g)||[]).length )) {
     text = text.replace(/\t/g, ',');
   }
@@ -535,8 +570,6 @@ function loadResortsFromTextarea() {
     if (headerLike) hasHeader = true;
   }
 
-  // default fallback order if no header:
-  // 0 ResortName,1 promo-slug,2 main-url,3 reservations-url,4 color1,5 color2,6 color3,7 img-url-1,8 img-url-2
   let mapping = { nameIdx: 0, promoIdx: 1, mainIdx: 2, reservationsIdx: 3, colorNameIdx: -1, color1Idx: 4, color2Idx: 5, color3Idx: 6, img1Idx: 7, img2Idx: 8 };
   if (hasHeader) {
     const hdr = first.map(h => normalizeHeaderKey(h));
@@ -554,7 +587,6 @@ function loadResortsFromTextarea() {
       else if (h.includes('img-url-1') || (h.includes('img') && h.includes('1')) || h.includes('image-1')) found.img1Idx = idx;
       else if (h.includes('img-url-2') || (h.includes('img') && h.includes('2')) || h.includes('image-2')) found.img2Idx = idx;
       else if (h.includes('url')) {
-        // generic url -> prefer main if main not set, otherwise reservations
         if (found.mainIdx === undefined) found.mainIdx = idx;
         else if (found.reservationsIdx === undefined) found.reservationsIdx = idx;
       }
@@ -580,7 +612,6 @@ function loadResortsFromTextarea() {
   const resorts = [];
   for (let i = startRow; i < rows.length; i++) {
     const rawRow = rows[i];
-    // Use the very first raw field as the label (as requested)
     const labelRaw = (rawRow[0] || '').trim();
 
     const name = (rawRow[mapping.nameIdx] || '').trim();
@@ -593,10 +624,7 @@ function loadResortsFromTextarea() {
     const color3 = (rawRow[mapping.color3Idx] || '').trim();
     const img1 = (rawRow[mapping.img1Idx] || '').trim();
     const img2 = (rawRow[mapping.img2Idx] || '').trim();
-
-    // If everything empty, skip
     if (!labelRaw && !name && !promoSlug && !mainUrl && !reservationsUrl) continue;
-
     resorts.push({
       label: labelRaw || name || ('Resort ' + (i+1)),
       name, promoSlug, mainUrl, reservationsUrl,
@@ -621,7 +649,6 @@ function renderResortButtons(resorts) {
     btn.className = 'resort-btn';
     btn.textContent = r.label || ('Resort ' + (idx+1));
 
-    // Attach all known attributes as data-*
     btn.setAttribute('data-promo-slug', r.promoSlug || '');
     btn.setAttribute('data-reservations-url', r.reservationsUrl || '');
     btn.setAttribute('data-main-url', r.mainUrl || '');
@@ -629,11 +656,9 @@ function renderResortButtons(resorts) {
     btn.setAttribute('data-color1', r.color1 || '');
     btn.setAttribute('data-color2', r.color2 || '');
     btn.setAttribute('data-color3', r.color3 || '');
-    // add img-url fields (new)
     btn.setAttribute('data-img-url-1', r['img-url-1'] || '');
     btn.setAttribute('data-img-url-2', r['img-url-2'] || '');
 
-    // Style with primary color if available; otherwise default
     const primary = (r.color1 || '').trim();
     if (primary) {
       try {
@@ -670,18 +695,15 @@ function selectResort(btn) {
   const img1 = btn.getAttribute('data-img-url-1') || '';
   const img2 = btn.getAttribute('data-img-url-2') || '';
 
-  // Populate visible fields
   document.getElementById('promo-slug').value = promo;
   document.getElementById('reservations-url').value = reservations;
   document.getElementById('main-url').value = main;
 
-  // Populate visible image fields (new)
   const img1El = document.getElementById('img-url-1');
   const img2El = document.getElementById('img-url-2');
   if (img1El) img1El.value = img1;
   if (img2El) img2El.value = img2;
 
-  // Save last selected label for template replacement
   const label = btn.textContent || '';
   let hidden = document.getElementById('last-selected-label');
   if (!hidden) {
@@ -692,7 +714,6 @@ function selectResort(btn) {
   }
   hidden.value = label;
 
-  // Update var1/var2 using parsed primary & secondary colors if present
   if (color1) {
     document.getElementById('var1').value = color1;
     updateColor(document.getElementById('var1'));
@@ -702,13 +723,10 @@ function selectResort(btn) {
     updateColor(document.getElementById('var2'));
   }
 
-  // Create or update hidden inputs for any additional columns (including img-url-1/img-url-2)
-  // Iterate through all data-* attributes of the clicked button and mirror them to hidden inputs
   for (let i = 0; i < btn.attributes.length; i++) {
     const attr = btn.attributes[i];
     if (!attr.name.startsWith('data-')) continue;
-    const key = attr.name.slice(5); // remove "data-"
-    // create or find input with id equal to the key
+    const key = attr.name.slice(5); 
     let input = document.getElementById(key);
     if (!input) {
       input = document.createElement('input');
@@ -727,7 +745,6 @@ function clearResorts() {
 }
 
 window.addEventListener('DOMContentLoaded', function() {
-  // Load the last used unnamed template (for backward compatibility)
   const last = localStorage.getItem('myTemplate');
   if (last && !getTemplates()['(Last unnamed)']) {
     let templates = getTemplates();
@@ -736,7 +753,6 @@ window.addEventListener('DOMContentLoaded', function() {
   }
   updateTemplateList();
 
-  // load any stored resorts
   const stored = localStorage.getItem('resortsList');
   if (stored) {
     try {
