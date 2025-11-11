@@ -253,6 +253,8 @@ Advantage Pet Center	advantage-pet-center	Violet	#5b46c4	#745af5	https://www.adv
       <option value="">-- Select Template --</option>
     </select>
     <button onclick="loadTemplate()">Load</button>
+    <!-- SUPER BUTTON next to Load -->
+    <button onclick="superLoadGenCopy()">Super Load + Generate + Copy</button>
     <button onclick="deleteTemplate()">Delete</button>
   </div>
   <textarea id="template" placeholder='Example: <a href="{reservations-url}" style="color:{var1}">{label}</a>'></textarea>
@@ -386,6 +388,22 @@ function copyToClipboard() {
   document.execCommand("copy");
   document.body.removeChild(dummy);
   alert('HTML copied!');
+}
+
+// --- SUPER BUTTON FUNCTION ---
+function superLoadGenCopy() {
+  // 1. Load the template
+  const list = document.getElementById("templateList");
+  const name = list.value;
+  if (!name) return alert("Please select a template.");
+  const templates = getTemplates();
+  document.getElementById("template").value = templates[name] || "";
+
+  // 2. Generate HTML
+  applyTemplate();
+
+  // 3. Copy HTML
+  copyToClipboard();
 }
 
 // --- Template Save/Load/Delete Logic ---
@@ -711,9 +729,9 @@ function clearResorts() {
 window.addEventListener('DOMContentLoaded', function() {
   // Load the last used unnamed template (for backward compatibility)
   const last = localStorage.getItem('myTemplate');
-  if (last && !getTemplates()["(Last unnamed)"]) {
+  if (last && !getTemplates()['(Last unnamed)']) {
     let templates = getTemplates();
-    templates["(Last unnamed)"] = last;
+    templates['(Last unnamed)'] = last;
     setTemplates(templates);
   }
   updateTemplateList();
